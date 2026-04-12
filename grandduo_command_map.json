@@ -879,13 +879,13 @@
         "name": "lower_4d_1",
         "label": "Lower 4D 1",
         "packets": [
-          "F102005052"
+          "F102005557"
         ],
         "status": "observed",
         "effect": "Lower 4D strength 1.",
         "family": "F102",
         "requires_startup": true,
-        "notes": "ManualLower capture-backed."
+        "notes": "Adjusted to match family progression; prior mapping did not work in app testing."
       },
       {
         "name": "lower_4d_2",

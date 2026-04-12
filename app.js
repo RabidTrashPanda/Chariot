@@ -6,6 +6,9 @@ const FCDC_COMMAND_DELAY_MS = 200;
 const POST_CONNECT_DELAY_MS = 250;
 const POST_STARTUP_SETTLE_MS = 400;
 const MAX_LOG_ITEMS = 80;
+const HEALTH_SCAN_DURATION_MS = 15000;
+const HEALTH_PROGRESS_MAX_BEFORE_RESULT = 95;
+const HEALTH_PROGRESS_TICK_MS = 250;
 const STORAGE_KEYS = {
   preferences: "grandduo.preferences.v1",
   aiPresets: "grandduo.aiPresets.v1",
@@ -136,7 +139,7 @@ const SECTION_CONFIG = [
     title: "Comfort",
     groups: [
       { label: "Restore", names: ["restore_on", "restore_off"], style: "toggle", optionLabels: { restore_on: "On", restore_off: "Off" } },
-      { label: "LED", names: ["light_therapy_off", "light_therapy_mode_1", "light_therapy_mode_2", "light_therapy_mode_3", "light_therapy_mode_4", "light_therapy_mode_5"], style: "range", valueLabels: { 0: "Off", 1: "1", 2: "2", 3: "3", 4: "4", 5: "5" } },
+      { label: "LED", custom: "led_level", names: ["light_therapy_off", "light_therapy_mode_1", "light_therapy_mode_2", "light_therapy_mode_3", "light_therapy_mode_4", "light_therapy_mode_5"], style: "range", valueLabels: { 0: "Off", 1: "1", 2: "2", 3: "3", 4: "4", 5: "5" } },
       { label: "Voice", names: ["voice_on", "voice_off"], style: "toggle", optionLabels: { voice_on: "On", voice_off: "Off" } },
       { label: "Anion", names: ["anion_on", "anion_off"], style: "toggle", optionLabels: { anion_on: "On", anion_off: "Off" } },
       { label: "Aromatherapy", names: ["aroma_off", "aroma_1", "aroma_2", "aroma_3", "aroma_4", "aroma_5"], style: "range", valueLabels: { 0: "Off" } },
@@ -150,7 +153,8 @@ const SECTION_CONFIG = [
       { label: "Waist Air", names: ["ai_waist_air_1", "ai_waist_air_5"], style: "range", valueLabels: { 1: "1", 5: "5" } },
       { label: "Leg / Foot Air", names: ["ai_leg_foot_air_1", "ai_leg_foot_air_5"], style: "range", valueLabels: { 1: "1", 5: "5" } },
       { label: "Full Body Air", names: ["ai_full_body_air_1", "ai_full_body_air_5"], style: "range", valueLabels: { 1: "1", 5: "5" } },
-      { label: "Rollers", names: ["ai_foot_rollers_1", "ai_foot_rollers_2", "ai_calf_rollers_1", "ai_calf_rollers_2"], style: "segmented", optionLabels: { ai_foot_rollers_1: "Foot 1", ai_foot_rollers_2: "Foot 2", ai_calf_rollers_1: "Calf 1", ai_calf_rollers_2: "Calf 2" } },
+      { label: "Foot Rollers", custom: "ai_foot_roller_level", style: "range", valueLabels: { 0: "Off", 1: "1", 2: "2" } },
+      { label: "Calf Rollers", custom: "ai_calf_roller_level", style: "range", valueLabels: { 0: "Off", 1: "1", 2: "2" } },
     ],
   },
 ];
@@ -167,6 +171,11 @@ const state = {
   lastState: null,
   health: null,
   healthRequested: false,
+  healthProgress: null,
+  healthProgressText: null,
+  healthFlowState: "idle",
+  healthScanStartedAt: null,
+  healthProgressTimer: null,
   recentNotifications: [],
   commandHistory: [],
   frameBuffer: [],
@@ -175,6 +184,7 @@ const state = {
   savedAiPresets: [],
   savedMacros: [],
   macroDraft: { name: "", steps: [] },
+  macroCommandFilter: "",
   paused: false,
   poweredOn: false,
   activeTab: "session",
@@ -201,6 +211,7 @@ const els = {
   timerField: document.getElementById("timerField"),
   healthPanel: document.getElementById("healthPanel"),
   healthStatus: document.getElementById("healthStatus"),
+  healthProgress: document.getElementById("healthProgress"),
   heartRateValue: document.getElementById("heartRateValue"),
   heartRateState: document.getElementById("heartRateState"),
   bloodOxygenValue: document.getElementById("bloodOxygenValue"),
@@ -221,7 +232,8 @@ const els = {
   aiWaistAir: document.getElementById("aiWaistAir"),
   aiLegAir: document.getElementById("aiLegAir"),
   aiFullBodyAir: document.getElementById("aiFullBodyAir"),
-  aiRollers: document.getElementById("aiRollers"),
+  aiFootRollers: document.getElementById("aiFootRollers"),
+  aiCalfRollers: document.getElementById("aiCalfRollers"),
   aiHeatRoller: document.getElementById("aiHeatRoller"),
   aiHeatShawl: document.getElementById("aiHeatShawl"),
   aiHeatCalf: document.getElementById("aiHeatCalf"),
@@ -281,7 +293,8 @@ async function bootstrap() {
   fillSelectWithLevels(els.aiWaistAir, AI_AIR_LEVELS, "Off");
   fillSelectWithLevels(els.aiLegAir, AI_AIR_LEVELS, "Off");
   fillSelectWithLevels(els.aiFullBodyAir, AI_AIR_LEVELS, "Off");
-  fillSelectWithOptions(els.aiRollers, AI_ROLLER_OPTIONS.map((item) => ({ value: item.value, label: item.label })));
+  fillSelectWithLevels(els.aiFootRollers, [0,1,2], "Off");
+  fillSelectWithLevels(els.aiCalfRollers, [0,1,2], "Off");
 
   loadPersistentState();
 
@@ -307,7 +320,7 @@ async function bootstrap() {
     state.macroDraft.name = event.target.value;
   });
 
-  [els.aiShoulderAir, els.aiWaistAir, els.aiLegAir, els.aiFullBodyAir, els.aiRollers, els.aiHeatRoller, els.aiHeatShawl, els.aiHeatCalf, els.aiHeatFoot]
+  [els.aiShoulderAir, els.aiWaistAir, els.aiLegAir, els.aiFullBodyAir, els.aiFootRollers, els.aiCalfRollers, els.aiHeatRoller, els.aiHeatShawl, els.aiHeatCalf, els.aiHeatFoot]
     .filter(Boolean)
     .forEach((el) => el.addEventListener("change", handleAiAddonChange));
 
@@ -337,6 +350,10 @@ function createDefaultAiBuilderState() {
       waistAir: 0,
       legAir: 0,
       fullBodyAir: 0,
+      footRollers: 0,
+      calfRollers: 0,
+      footRollers: 0,
+      calfRollers: 0,
       rollers: "off",
       heatMask: createDefaultAiHeatMask(),
     },
@@ -360,6 +377,8 @@ function createEmptyAiBuilderState() {
       waistAir: 0,
       legAir: 0,
       fullBodyAir: 0,
+      footRollers: 0,
+      calfRollers: 0,
       rollers: "off",
       heatMask: createDefaultAiHeatMask(),
     },
@@ -410,23 +429,30 @@ function normalizePreferences(input) {
 
 function normalizeAiBuilderState(input) {
   const fallback = createDefaultAiBuilderState();
-  const zones = Array.isArray(input?.zones) ? input.zones.slice(0, AI_ZONE_CONFIG.length) : fallback.zones;
-  const normalizedZones = AI_ZONE_CONFIG.map((zone, index) => ({
-    key: zone.key,
-    technique: zones[index]?.technique || fallback.zones[index].technique,
-    speed: Number(zones[index]?.speed || fallback.zones[index].speed),
-    depth: Number(zones[index]?.depth || fallback.zones[index].depth),
-  }));
-  const heatMask = { ...createDefaultAiHeatMask(), ...(input?.addons?.heatMask || {}) };
+  const footRollers = Number(input?.addons?.footRollers ?? 0) || 0;
+  const calfRollers = Number(input?.addons?.calfRollers ?? 0) || 0;
+  const legacyRollers = String(input?.addons?.rollers || "off");
   return {
-    zones: normalizedZones,
+    zones: AI_ZONE_CONFIG.map((zone, index) => ({
+      key: zone.key,
+      technique: input?.zones?.[index]?.technique || fallback.zones[index].technique,
+      speed: Number(input?.zones?.[index]?.speed ?? fallback.zones[index].speed),
+      depth: Number(input?.zones?.[index]?.depth ?? fallback.zones[index].depth),
+    })),
     addons: {
       shoulderAir: Number(input?.addons?.shoulderAir ?? fallback.addons.shoulderAir),
       waistAir: Number(input?.addons?.waistAir ?? fallback.addons.waistAir),
       legAir: Number(input?.addons?.legAir ?? fallback.addons.legAir),
       fullBodyAir: Number(input?.addons?.fullBodyAir ?? fallback.addons.fullBodyAir),
-      rollers: input?.addons?.rollers || fallback.addons.rollers,
-      heatMask,
+      footRollers: footRollers || (legacyRollers === "foot1" ? 1 : legacyRollers === "foot2" ? 2 : 0),
+      calfRollers: calfRollers || (legacyRollers === "calf1" ? 1 : legacyRollers === "calf2" ? 2 : 0),
+      rollers: legacyRollers,
+      heatMask: {
+        roller: Boolean(input?.addons?.heatMask?.roller),
+        shawl: Boolean(input?.addons?.heatMask?.shawl),
+        calf: Boolean(input?.addons?.heatMask?.calf),
+        foot: Boolean(input?.addons?.heatMask?.foot),
+      },
     },
   };
 }
@@ -480,7 +506,7 @@ function createMacroStep(type = "command") {
   if (type === "wait") return { type: "wait", seconds: 1 };
   if (type === "ai_preset") return { type: "ai_preset", presetId: state.savedAiPresets[0]?.id || "" };
   const fallbackCommand = getAllCommands().find((item) => !item.name.endsWith('_stop')) || getAllCommands()[0];
-  return { type: "command", commandName: fallbackCommand?.name || "" };
+  return { type: "command", commandName: fallbackCommand?.name || "", durationSeconds: 3 };
 }
 
 function fillSelectWithLevels(select, values, offLabel = "0") {
@@ -691,6 +717,162 @@ async function applyManualRollerSelection() {
   }
 }
 
+
+function isMomentarySelectionGroup(group) {
+  return ["Time", "4D Profile", "Presets"].includes(group?.label || "");
+}
+
+function beginHealthScanTracking() {
+  state.healthRequested = true;
+  state.health = null;
+  state.healthScanStartedAt = Date.now();
+  state.healthProgress = 1;
+  state.healthProgressText = "Estimated 1%";
+  state.healthFlowState = "starting";
+  startHealthProgressTimer();
+  renderHealthReport();
+  renderConnectHealth();
+}
+
+
+function updateEstimatedHealthProgress() {
+  if (!state.healthScanStartedAt || !(state.healthFlowState === "starting" || state.healthFlowState === "scanning")) return;
+  const elapsed = Math.max(0, Date.now() - state.healthScanStartedAt);
+  const ratio = Math.min(1, elapsed / HEALTH_SCAN_DURATION_MS);
+  const value = Math.max(1, Math.min(HEALTH_PROGRESS_MAX_BEFORE_RESULT, Math.round(ratio * HEALTH_PROGRESS_MAX_BEFORE_RESULT)));
+  state.healthProgress = value;
+  state.healthProgressText = `Estimated ${value}%`;
+  renderHealthReport();
+  renderConnectHealth();
+}
+
+function startHealthProgressTimer() {
+  if (state.healthProgressTimer) clearInterval(state.healthProgressTimer);
+  state.healthProgressTimer = setInterval(updateEstimatedHealthProgress, HEALTH_PROGRESS_TICK_MS);
+}
+
+function stopHealthProgressTimer() {
+  if (state.healthProgressTimer) {
+    clearInterval(state.healthProgressTimer);
+    state.healthProgressTimer = null;
+  }
+}
+
+function stopHealthScanTracking(clearResult = false) {
+  stopHealthProgressTimer();
+  state.healthScanStartedAt = null;
+  state.healthProgress = null;
+  state.healthProgressText = null;
+  if (clearResult) state.health = null;
+  if (!state.health || !state.health.received) {
+    state.healthRequested = false;
+    state.healthFlowState = "idle";
+  }
+  renderHealthReport();
+  renderConnectHealth();
+}
+
+function getHealthActionMode() {
+  if (state.healthFlowState === "scanning" || state.healthFlowState === "starting") return "stop";
+  if (state.health && state.health.received) return "recommend";
+  return "start";
+}
+
+async function handleHealthAction() {
+  const mode = getHealthActionMode();
+  const byName = getCommandsByName();
+  if (mode === "stop") {
+    if (byName.health_test_stop) await sendCommand(byName.health_test_stop);
+    return;
+  }
+  if (mode === "recommend") {
+    if (byName.ai_recommendation) await sendCommand(byName.ai_recommendation);
+    state.healthFlowState = "idle";
+    state.healthRequested = false;
+    stopHealthProgressTimer();
+    state.healthScanStartedAt = null;
+    state.healthProgress = null;
+    state.healthProgressText = null;
+    renderHealthReport();
+    renderConnectHealth();
+    return;
+  }
+  if (byName.health_test_start) await sendCommand(byName.health_test_start);
+}
+
+function getHealthActionLabel() {
+  const mode = getHealthActionMode();
+  if (mode === "stop") return "Stop Health Scan";
+  if (mode === "recommend") return "Run Health Recommendation";
+  return "Start Health Scan";
+}
+
+function getMacroCommandsGrouped(filterText = "") {
+  const query = String(filterText || "").trim().toLowerCase();
+  const groups = new Map();
+  for (const command of getAllCommands()) {
+    if (["health_test_start","health_test_stop","ai_recommendation"].includes(command.name)) continue;
+    const label = getDisplayLabel(command);
+    const hay = `${label} ${command.name} ${command._category || ""}`.toLowerCase();
+    if (query && !hay.includes(query)) continue;
+    const group = String(command._category || "other").replace(/_/g, " ");
+    if (!groups.has(group)) groups.set(group, []);
+    groups.get(group).push(command);
+  }
+  for (const items of groups.values()) items.sort((a,b)=>getDisplayLabel(a).localeCompare(getDisplayLabel(b)));
+  return [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+}
+
+function getLedCommandForLevel(level) {
+  const byName = getCommandsByName();
+  if (Number(level) <= 0) return [byName.led_off || byName.light_therapy_off].filter(Boolean);
+  const commands = [];
+  if (byName.led_on) commands.push(byName.led_on);
+  const mode = byName[`light_therapy_mode_${Number(level)}`];
+  if (mode) commands.push(mode);
+  return commands;
+}
+
+async function sendLedLevel(level) {
+  const commands = getLedCommandForLevel(level);
+  if (!commands.length) return;
+  for (const command of commands) await sendCommand(command);
+}
+
+function createLedLevelControl(group) {
+  const options = [0,1,2,3,4,5].map((value) => ({ value, label: group?.valueLabels?.[value] ?? String(value) }));
+  const groupId = getGroupId(group);
+  const selected = Number(state.uiSelections[groupId] ?? 0);
+  return createDiscreteLevelBar(options, selected, async (value) => {
+    state.uiSelections[groupId] = String(value);
+    await sendLedLevel(value);
+  });
+}
+
+async function sendAiRollerSelection() {
+  const byName = getCommandsByName();
+  const foot = Number(state.aiBuilder.addons.footRollers || 0);
+  const calf = Number(state.aiBuilder.addons.calfRollers || 0);
+  if (foot > 0 && calf > 0) {
+    appendCommandHistory("AI foot and calf rollers are shown as separate sliders, but combined packets are not decoded yet. Sending nothing.");
+    return;
+  }
+  const commandName = foot > 0 ? `ai_foot_rollers_${foot}` : calf > 0 ? `ai_calf_rollers_${calf}` : null;
+  if (!commandName) return;
+  const command = byName[commandName];
+  if (command) await sendCommand(command);
+}
+
+function createAiRollerLevelControl(kind, group) {
+  const options = [0,1,2].map((value) => ({ value, label: group?.valueLabels?.[value] ?? (value === 0 ? "Off" : String(value)) }));
+  const selected = Number(kind === "foot" ? state.aiBuilder.addons.footRollers || 0 : state.aiBuilder.addons.calfRollers || 0);
+  return createDiscreteLevelBar(options, selected, async (value) => {
+    if (kind === "foot") state.aiBuilder.addons.footRollers = Number(value);
+    else state.aiBuilder.addons.calfRollers = Number(value);
+    await sendAiRollerSelection();
+    renderAiBuilder();
+  });
+}
 function createManualAirRegionControl() {
   const options = [
     { value: "manual_air_off", label: "Off (Exp)" },
@@ -912,6 +1094,9 @@ function createGroupControlGrid(group, commands) {
   if (group?.custom === "manual_air_region") return createManualAirRegionControl(group);
   if (group?.custom === "manual_roller_region") return createManualRollerRegionControl(group);
   if (group?.custom === "manual_roller_level") return createManualRollerLevelControl(group);
+  if (group?.custom === "led_level") return createLedLevelControl(group);
+  if (group?.custom === "ai_foot_roller_level") return createAiRollerLevelControl("foot", group);
+  if (group?.custom === "ai_calf_roller_level") return createAiRollerLevelControl("calf", group);
 
   const motion = getMotionBehavior(group);
   const grid = document.createElement("div");
@@ -1025,7 +1210,8 @@ function syncAiAddonControls() {
   if (els.aiWaistAir) els.aiWaistAir.value = String(addons.waistAir);
   if (els.aiLegAir) els.aiLegAir.value = String(addons.legAir);
   if (els.aiFullBodyAir) els.aiFullBodyAir.value = String(addons.fullBodyAir);
-  if (els.aiRollers) els.aiRollers.value = addons.rollers;
+  if (els.aiFootRollers) els.aiFootRollers.value = String(addons.footRollers || 0);
+  if (els.aiCalfRollers) els.aiCalfRollers.value = String(addons.calfRollers || 0);
   if (els.aiHeatRoller) els.aiHeatRoller.checked = Boolean(addons.heatMask?.roller);
   if (els.aiHeatShawl) els.aiHeatShawl.checked = Boolean(addons.heatMask?.shawl);
   if (els.aiHeatCalf) els.aiHeatCalf.checked = Boolean(addons.heatMask?.calf);
@@ -1038,7 +1224,9 @@ function handleAiAddonChange() {
     waistAir: Number(els.aiWaistAir?.value || 0),
     legAir: Number(els.aiLegAir?.value || 0),
     fullBodyAir: Number(els.aiFullBodyAir?.value || 0),
-    rollers: els.aiRollers?.value || "off",
+    footRollers: Number(els.aiFootRollers?.value || 0),
+    calfRollers: Number(els.aiCalfRollers?.value || 0),
+    rollers: "off",
     heatMask: {
       roller: Boolean(els.aiHeatRoller?.checked),
       shawl: Boolean(els.aiHeatShawl?.checked),
@@ -1169,6 +1357,15 @@ function addMacroStep(type) {
   renderMacroDraft();
 }
 
+
+function isHoldStartCommandName(name) {
+  return /_(up|down|in|out)_start$/.test(String(name || ""));
+}
+
+function getStopCommandNameForStart(name) {
+  if (!isHoldStartCommandName(name)) return null;
+  return String(name).replace(/_(up|down|in|out)_start$/, "_stop");
+}
 function renderMacroDraft() {
   if (els.macroName) els.macroName.value = state.macroDraft.name || "";
   if (!els.macroSteps) return;
@@ -1181,7 +1378,6 @@ function renderMacroDraft() {
     return;
   }
 
-  const allCommands = getAllCommands().sort((a, b) => getDisplayLabel(a).localeCompare(getDisplayLabel(b)));
   const fragment = document.createDocumentFragment();
   state.macroDraft.steps.forEach((step, index) => {
     const row = document.createElement("div");
@@ -1195,18 +1391,61 @@ function renderMacroDraft() {
     editor.className = "macro-step-editor";
 
     if (step.type === "command") {
+      const searchWrap = document.createElement("label");
+      searchWrap.className = "field";
+      const searchLabel = document.createElement("span");
+      searchLabel.textContent = "Search";
+      const searchInput = document.createElement("input");
+      searchInput.type = "text";
+      searchInput.placeholder = "Type to filter commands";
+      searchInput.value = state.macroCommandFilter || "";
+      searchInput.addEventListener("input", (event) => {
+        state.macroCommandFilter = event.target.value;
+        renderMacroDraft();
+      });
+      searchWrap.append(searchLabel, searchInput);
+      editor.append(searchWrap);
+
+      const selectWrap = document.createElement("label");
+      selectWrap.className = "field";
+      const selectLabel = document.createElement("span");
+      selectLabel.textContent = "Command";
       const select = document.createElement("select");
-      for (const command of allCommands) {
-        const option = document.createElement("option");
-        option.value = command.name;
-        option.textContent = getDisplayLabel(command);
-        if (command.name === step.commandName) option.selected = true;
-        select.append(option);
+      for (const [groupName, commands] of getMacroCommandsGrouped(state.macroCommandFilter)) {
+        const optgroup = document.createElement("optgroup");
+        optgroup.label = groupName;
+        for (const command of commands) {
+          const option = document.createElement("option");
+          option.value = command.name;
+          option.textContent = getDisplayLabel(command);
+          if (command.name === step.commandName) option.selected = true;
+          optgroup.append(option);
+        }
+        select.append(optgroup);
       }
       select.addEventListener("change", (event) => {
         step.commandName = event.target.value;
+        if (isHoldStartCommandName(step.commandName) && !Number(step.durationSeconds)) step.durationSeconds = 3;
+        renderMacroDraft();
       });
-      editor.append(select);
+      selectWrap.append(selectLabel, select);
+      editor.append(selectWrap);
+      if (isHoldStartCommandName(step.commandName)) {
+        const holdWrap = document.createElement("label");
+        holdWrap.className = "field";
+        const holdLabel = document.createElement("span");
+        holdLabel.textContent = "Hold Seconds";
+        const holdInput = document.createElement("input");
+        holdInput.type = "number";
+        holdInput.min = "1";
+        holdInput.step = "1";
+        holdInput.value = String(Math.max(1, Number(step.durationSeconds || 3)));
+        holdInput.addEventListener("input", (event) => {
+          step.durationSeconds = Math.max(1, Number(event.target.value || 1));
+        });
+        holdWrap.append(holdLabel, holdInput);
+        editor.append(holdWrap);
+      }
     } else if (step.type === "wait") {
       const input = document.createElement("input");
       input.type = "number";
@@ -1344,7 +1583,15 @@ async function runMacro(macro) {
       continue;
     }
     const command = byName[step.commandName];
-    if (command) await sendCommand(command);
+    if (command) {
+      await sendCommand(command);
+      if (isHoldStartCommandName(step.commandName)) {
+        const stopName = getStopCommandNameForStart(step.commandName);
+        const stopCommand = byName[stopName];
+        await delay(Math.max(1, Number(step.durationSeconds || 1)) * 1000);
+        if (stopCommand) await sendCommand(stopCommand);
+      }
+    }
   }
 }
 
@@ -1372,10 +1619,19 @@ function encodeAiZoneField(zone) {
 }
 
 function encodeAiAddonBlock(addons) {
-  const byte1 = (clampNibble(addons.shoulderAir) << 4) | clampNibble(addons.waistAir);
-  const byte2 = (clampNibble(addons.legAir) << 4) | clampNibble(addons.fullBodyAir);
-  const rollerByte = AI_ROLLER_OPTIONS.find((item) => item.value === addons.rollers)?.byte || "00";
-  const heatByte = AI_HEAT_SURFACE_CONFIG.reduce((mask, item) => mask | (addons.heatMask?.[item.key] ? item.bit : 0), 0);
+  const byte1 = ((Number(addons?.shoulderAir || 0) & 0x0F) << 4) | (Number(addons?.waistAir || 0) & 0x0F);
+  const byte2 = ((Number(addons?.legAir || 0) & 0x0F) << 4) | (Number(addons?.fullBodyAir || 0) & 0x0F);
+  let rollerByte = "00";
+  const foot = Number(addons?.footRollers || 0);
+  const calf = Number(addons?.calfRollers || 0);
+  if (foot > 0 && calf > 0) {
+    appendCommandHistory("AI builder has both foot and calf rollers set. Combined packet is unresolved, so the roller byte is being sent as 00.");
+  } else if (foot > 0) {
+    rollerByte = foot === 2 ? "20" : "10";
+  } else if (calf > 0) {
+    rollerByte = calf === 2 ? "22" : "21";
+  }
+  const heatByte = AI_HEAT_SURFACE_CONFIG.reduce((value, item) => value | (addons?.heatMask?.[item.key] ? item.bit : 0), 0);
   return `${toHexByte(byte1)}${toHexByte(byte2)}${rollerByte}${toHexByte(heatByte)}`;
 }
 
@@ -1409,19 +1665,25 @@ async function sendAiBuilderPacket() {
 function renderConnectHealth() {
   if (!els.connectHealthMount) return;
   els.connectHealthMount.innerHTML = "";
-  const commands = state.map?.commands_by_function?.body_scan_and_health || [];
-  if (!commands.length) return;
-
-  const group = { label: "Startup Health", category: "body_scan_and_health", style: "actions" };
   const subgroup = document.createElement("div");
   subgroup.className = "subgroup connect-health-group";
   const title = document.createElement("h3");
   title.textContent = "Startup Health";
   const note = document.createElement("p");
   note.className = "muted connect-health-note";
-  note.textContent = "Run the scan here, then use Health Recommendation to let the chair choose a massage.";
-  const controls = createGroupControlGrid(group, commands);
-  subgroup.append(title, note, controls);
+  note.textContent = "This is a stateful flow: start the scan, stop it if needed while it is running, then run Health Recommendation after a completed result.";
+  const controls = document.createElement("div");
+  controls.className = "button-grid actions-grid";
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "tick-button label-only";
+  btn.textContent = getHealthActionLabel();
+  btn.addEventListener("click", () => { handleHealthAction(); });
+  controls.append(btn);
+  const progress = document.createElement("div");
+  progress.className = "muted connect-health-progress";
+  progress.textContent = state.healthProgressText || (state.healthProgress == null ? "Idle" : `${state.healthProgress}%`);
+  subgroup.append(title, note, controls, progress);
   els.connectHealthMount.append(subgroup);
 }
 
@@ -1784,11 +2046,11 @@ function createCommandButton(command, group = null, overrideLabel = null, select
   if (group?.style === "segmented" || group?.style === "toggle") {
     node.classList.add("segment-button");
     const groupId = selectionKey || getGroupId(group);
-    if (state.uiSelections[groupId] === command.name) node.classList.add("is-active");
+    if (!isMomentarySelectionGroup(group) && state.uiSelections[groupId] === command.name) node.classList.add("is-active");
     node.addEventListener("click", async () => {
-      state.uiSelections[groupId] = command.name;
+      if (!isMomentarySelectionGroup(group)) state.uiSelections[groupId] = command.name;
       await sendCommand(command);
-      renderCommands();
+      if (!isMomentarySelectionGroup(group)) renderCommands();
     });
   } else {
     node.addEventListener("click", () => sendCommand(command));
@@ -1913,9 +2175,11 @@ function onDisconnected() {
   state.paused = false;
   state.lastState = null;
   state.health = null;
+  
   state.healthRequested = false;
   renderConnectionState();
   renderHealthReport();
+  renderConnectHealth();
   updateControlDisabledState();
   appendCommandHistory("Disconnected.");
 }
@@ -1946,14 +2210,23 @@ async function sendCommand(command) {
     await delay(FCDC_COMMAND_DELAY_MS);
   }
 
-  if (["health_test_screen", "health_test_start", "ai_recommendation"].includes(command.name)) {
-    state.healthRequested = true;
-    renderHealthReport();
+  if (command.name === "health_test_start") {
+    beginHealthScanTracking();
   }
   if (command.name === "health_test_stop") {
-    state.healthRequested = false;
-    state.health = null;
+    state.healthFlowState = "stopping";
+    state.healthProgressText = "Stopping…";
+    stopHealthProgressTimer();
     renderHealthReport();
+    renderConnectHealth();
+  }
+  if (command.name === "ai_recommendation") {
+    state.healthFlowState = "idle";
+    state.healthRequested = false;
+    state.healthProgress = null;
+    state.healthProgressText = null;
+    renderHealthReport();
+    renderConnectHealth();
   }
 
   appendCommandHistory(`Sending ${command.label}`);
@@ -2008,7 +2281,35 @@ function extractFrames() {
         state.frameBuffer.splice(0, 58);
         continue;
       }
-      if (state.frameBuffer.length >= 34) {
+      if (state.frameBuffer.length >= 34 && isFaBaseChecksumValid(Uint8Array.from(state.frameBuffer.slice(0, 34)), 34)) {
+        if (state.frameBuffer[4] === 0x0C && state.frameBuffer[5] === 0x28) {
+          const nextFa = state.frameBuffer.indexOf(0xFA, 34);
+          const nextFf = findHeartbeatIndex(state.frameBuffer, 34);
+          const nextMarker = [nextFa, nextFf].filter((index) => index >= 0).sort((a,b) => a-b)[0];
+          if (nextMarker === 37 || nextMarker === 39) {
+            output.push(Uint8Array.from(state.frameBuffer.slice(0, nextMarker)));
+            state.frameBuffer.splice(0, nextMarker);
+            continue;
+          }
+          if (nextMarker === 34) {
+            output.push(Uint8Array.from(state.frameBuffer.slice(0, 34)));
+            state.frameBuffer.splice(0, 34);
+            continue;
+          }
+          if (nextMarker == null) {
+            if (state.frameBuffer.length >= 39) {
+              output.push(Uint8Array.from(state.frameBuffer.slice(0, 39)));
+              state.frameBuffer.splice(0, 39);
+              continue;
+            }
+            if (state.frameBuffer.length >= 37) {
+              output.push(Uint8Array.from(state.frameBuffer.slice(0, 37)));
+              state.frameBuffer.splice(0, 37);
+              continue;
+            }
+            break;
+          }
+        }
         output.push(Uint8Array.from(state.frameBuffer.slice(0, 34)));
         state.frameBuffer.splice(0, 34);
         continue;
@@ -2031,6 +2332,75 @@ function extractFrames() {
   return output;
 }
 
+
+function isHealthStateFrame(bytes) {
+  return bytes instanceof Uint8Array && bytes.length >= 34 && bytes[0] === 0xFA && bytes[4] === 0x0C && bytes[5] === 0x28;
+}
+
+function healthBaseFrameLength(bytes) {
+  return isHealthStateFrame(bytes) ? 34 : null;
+}
+
+function isFaBaseChecksumValid(bytes, length = 34) {
+  if (!(bytes instanceof Uint8Array) || bytes.length < length || bytes[0] !== 0xFA) return false;
+  let xor = 0;
+  for (let i = 1; i < length - 1; i += 1) xor ^= bytes[i];
+  return xor === bytes[length - 1];
+}
+
+function parseHealthScanFrame(bytes) {
+  if (!(bytes instanceof Uint8Array) || bytes.length < 34 || bytes[0] !== 0xFA || bytes[4] !== 0x0C || bytes[5] !== 0x28) return null;
+  const active = bytes[6] === 0x01;
+  const trailer = Array.from(bytes.slice(34));
+  let progress = null;
+  // Real scan frames are present in captures, but the exact percentage mapping is not fully decoded yet.
+  // Avoid faking percentage values. Only surface numeric progress when a direct field is known.
+  return {
+    active,
+    trailer,
+    progress,
+    rawHex: bytesToHex(bytes),
+    received: true,
+  };
+}
+
+function updateHealthFlowFromFrame(bytes) {
+  const hex = bytesToHex(bytes);
+  if (hex.startsWith("F5002149")) {
+    state.healthRequested = true;
+    if (!state.healthScanStartedAt) state.healthScanStartedAt = Date.now();
+    state.healthFlowState = "scanning";
+    startHealthProgressTimer();
+    updateEstimatedHealthProgress();
+    return true;
+  }
+  if (hex.startsWith("F500214A")) {
+    stopHealthScanTracking(true);
+    return true;
+  }
+  const scan = parseHealthScanFrame(bytes);
+  if (scan) {
+    state.healthRequested = true;
+    state.healthFlowState = scan.active ? "scanning" : (state.health && state.health.received ? "complete" : "idle");
+    if (scan.active) {
+      if (!state.healthScanStartedAt) state.healthScanStartedAt = Date.now();
+      startHealthProgressTimer();
+      if (scan.progress != null) {
+        state.healthProgress = scan.progress;
+        state.healthProgressText = `${scan.progress}%`;
+      } else {
+        updateEstimatedHealthProgress();
+      }
+    } else if (!(state.health && state.health.received)) {
+      stopHealthProgressTimer();
+      state.healthScanStartedAt = null;
+      state.healthProgress = null;
+      state.healthProgressText = null;
+    }
+    return true;
+  }
+  return false;
+}
 function findHeartbeatIndex(buffer, startIndex) {
   for (let index = startIndex; index <= buffer.length - 4; index += 1) {
     if (buffer[index] === 0xFF && buffer[index + 1] === 0xFF && buffer[index + 2] === 0xFF && buffer[index + 3] === 0xFF) {
@@ -2048,9 +2418,14 @@ function recordFrame(frame) {
   if (bytes.length === 8 && bytes.every((value) => value === 0xFF)) {
     parsedText = "heartbeat";
   } else {
+    updateHealthFlowFromFrame(bytes);
     const health = parseHealthFrame(bytes);
     if (health) {
       state.health = health;
+      state.healthProgress = 100;
+      state.healthProgressText = "100%";
+      state.healthRequested = true;
+      state.healthFlowState = "complete";
       parsedText = `health ${health.overallStatus} hr=${health.metrics.heartRate.value ?? "--"} spo2=${health.metrics.bloodOxygen.value ?? "--"}`;
     } else {
       const parsed = parseFaFrame(bytes, state.lastState);
@@ -2160,12 +2535,20 @@ function parseHealthFrame(bytes) {
 
 function renderHealthReport() {
   const shouldShow = Boolean(state.healthRequested && state.health && state.health.received);
+  const healthTabVisible = getTabItems().some((item) => item.key === "health");
   if (!shouldShow && state.activeTab === "health") {
     state.activeTab = "session";
   }
   if (els.healthPanel) els.healthPanel.classList.toggle("hidden", !shouldShow);
-  renderSectionNav();
+  if (state._lastHealthTabVisible !== healthTabVisible) {
+    state._lastHealthTabVisible = healthTabVisible;
+    renderSectionNav();
+  }
   updateTabVisibility();
+  if (els.healthProgress) {
+    if (state.healthProgressText) els.healthProgress.textContent = state.healthProgressText;
+    else els.healthProgress.textContent = state.healthProgress == null ? "--" : `${state.healthProgress}%`;
+  }
   if (!shouldShow) return;
 
   els.healthStatus.textContent = state.health.overallStatus || "--";

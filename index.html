@@ -49,7 +49,7 @@
         <section id="healthPanel" class="panel health-panel hidden tab-panel" data-tab-key="health" aria-live="polite">
           <div class="health-head">
             <h2>Health Report</h2>
-            <div id="healthStatus" class="health-status">--</div>
+            <div class="health-head-meta"><div id="healthStatus" class="health-status">--</div><div id="healthProgress" class="health-status health-progress">--</div></div>
           </div>
           <div class="health-grid">
             <div class="metric-card">
@@ -115,8 +115,12 @@
                   <select id="aiFullBodyAir"></select>
                 </label>
                 <label class="field">
-                  <span>Rollers</span>
-                  <select id="aiRollers"></select>
+                  <span>Foot Rollers</span>
+                  <select id="aiFootRollers"></select>
+                </label>
+                <label class="field">
+                  <span>Calf Rollers</span>
+                  <select id="aiCalfRollers"></select>
                 </label>
               </div>
               <p class="muted">Experimental AI heat surface mask. Use the Heat tab to set the universal heat stage for each surface.</p>
