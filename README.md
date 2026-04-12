@@ -1,147 +1,86 @@
-# Grand Duo Bluefy Web App
+# Chariot
 
-This is a **static single-page web app** built from your April 12, 2026 Grand Duo controller bundle.
+Chariot is an alternative web interface for controlling an Osaki Grand Duo massage chair over Web Bluetooth.
 
-It is designed for the path you described:
+It is a static web app. There is no backend.
 
-- browser-based BLE control
-- no bundler required
-- host over HTTPS
-- open it in **Bluefy** on iPhone
-- reuse the cleaned command map instead of hardcoding a giant mess of packets
+## What it does
 
-## Included app files
+The app can:
+- connect to a nearby Grand Duo chair
+- start chair sessions and change the session time
+- run the known massage programs
+- control chair position and movement
+- use manual upper and lower mechanism controls
+- adjust 4D, speed, rollers, airbags, heat, and comfort settings
+- run the health scan flow and trigger Health Recommendation
 
-- `index.html` — main SPA shell
-- `styles.css` — responsive tablet/phone layout
-- `app.js` — Web Bluetooth transport, startup burst, FA parser, command UI
-- `command-map.js` — your Grand Duo command map embedded as a JS module
+## Current status
 
-## What this version does
+Most core chair controls are working.
 
-- Connects to a `Grand Duo-*` BLE device through Web Bluetooth
-- Uses:
-  - service: `0000FFF0-0000-1000-8000-00805F9B34FB`
-  - notify: `0734594A-A8E7-4B1A-A6B1-CD5243059A57`
-  - write: `0000FFF1-0000-1000-8000-00805F9B34FB`
-- Auto-sends the known startup burst after connect
-- Renders the cleaned command groups as touch-friendly buttons
-- Parses full 34-byte `FA` frames
-- Shows:
-  - connection status
-  - timer decode
-  - state family
-  - mode prefix
-  - recent notifications
-  - command history
-- Supports raw hex sends
-- Hides `legs_down` by default, but allows experimental commands to be shown
+A few areas are still experimental:
+- Air Pressure Off
+- parts of the AI heat surface mask
+- deeper live telemetry decoding from `FA` state frames
 
-## Why this is the right first web version
+Those experimental items are exposed in the UI as experimental on purpose.
 
-I kept it as a **plain static app** instead of React/Vite so you can:
+## Files in this repo
 
-- drop it onto GitHub Pages / Netlify / Cloudflare Pages
-- open it immediately in Bluefy
-- avoid dealing with a build pipeline before the BLE path is proven on iPhone
+- `index.html` — app shell
+- `styles.css` — UI styling
+- `app.js` — app logic, BLE handling, rendering, and controls
+- `grandduo_command_map.json` — command map and packet definitions
+- `README.md` — this file
+- `SNIFF_TODO.md` — remaining packet-capture work
 
-That keeps the first deployment focused on whether the chair behavior matches your command map.
+## How to run it
 
-## How to run it in Bluefy
+Because this app uses Web Bluetooth and fetches the command map JSON at runtime, do not open it directly with `file://`.
 
-### Option 1: GitHub Pages
-1. Create a new GitHub repo.
-2. Upload these app files.
-3. Enable GitHub Pages for the repo.
-4. Open the resulting HTTPS URL in Bluefy on iPhone.
-5. Tap **Connect**.
-6. Choose your `Grand Duo-*` chair.
-7. The app will auto-run the startup burst, then commands should be live.
+Use one of these instead:
+- serve it locally from `localhost`
+- host it on an HTTPS site such as GitHub Pages
 
-### Option 2: Netlify / Cloudflare Pages
-1. Upload this folder as a static site.
-2. Use the generated HTTPS URL.
-3. Open that URL in Bluefy.
+Then:
+1. open the site in a Web Bluetooth capable browser
+2. power on the chair
+3. connect to a nearby `Grand Duo-*` device
 
-## Important operating notes
+## How to change chair commands
 
-- This must be served over **HTTPS** for Web Bluetooth.
-- Safari on iPhone does not expose Web Bluetooth, so use **Bluefy**.
-- `requestDevice()` must be triggered from a user gesture, which is why connection starts from the **Connect** button.
-- Backgrounding the browser may disconnect the BLE session.
+Edit `grandduo_command_map.json`.
 
-## Iteration plan
+That file is the command source of truth for the app. If a capture confirms a new packet or corrects an old one, update the JSON and then update the UI code in `app.js` if needed.
 
-### Iteration 1 — working web controller
-This build is Iteration 1.
+## Heat model
 
-Goal:
-- prove the BLE transport path on Bluefy
-- verify startup burst + known commands + state feed
-- get a usable tablet/phone UI running quickly
+The app treats heat as a chair-wide control that can be adjusted during a massage.
 
-Included:
-- command sections
-- logs
-- raw hex panel
-- FA parser
-- hidden command fence
+The current heat surfaces are:
+- roller
+- shawl
+- calf
+- foot
 
-### Iteration 2 — state-aware operator UI
-Next pass should add:
+Heat levels are exposed as stages from 0 through 3.
 
-- favorites / pinned commands
-- better chair-state decoding beyond timer/family/mode
-- per-command badges like confirmed / tentative / composite
-- state diffs between FA frames
-- safer packet throttling / queueing
-- AI command explanation drawer showing the exact FCDC packets being sent
-- import / export of local presets
+## Health workflow
 
-### Iteration 3 — real “productized” controller
-After Bluefy validation, the best long-term step is:
+Health Recommendation is treated as a trigger, not as a fixed hidden program name.
 
-- wrap the same UI in a native shell
-- keep the command model
-- swap the BLE transport layer
+The intended flow is:
+1. run a health scan
+2. review the results
+3. trigger Health Recommendation
+4. let the chair choose a massage based on that scan
 
-Best likely paths:
-- **Capacitor** for a thin native shell with a web UI
-- **.NET MAUI Blazor Hybrid** if you want to stay in the MAUI direction you mentioned earlier
+## What still needs work
 
-That removes the Bluefy dependency while preserving most of the UI and command-layer logic.
+The biggest remaining gaps are:
+- confirming a real air-off packet if one exists
+- tightening the AI heat mask behavior
+- decoding more live state from `FA` telemetry
 
-## Architecture notes
-
-The app is intentionally structured so the BLE pieces can be swapped later:
-
-- `connectToChair()` / `disconnectFromChair()` — transport entry points
-- `sendHex()` — single write primitive
-- `sendStartupBurst()` — session bootstrap
-- `sendCommand()` — command sequencing
-- `extractFrames()` — notification reassembly
-- `parseFaFrame()` — current state parser
-- `renderCommands()` — UI from command-map metadata
-
-That means the later migration path is straightforward:
-
-1. keep the command map
-2. keep the UI sections and rendering logic
-3. replace the Web Bluetooth transport with native BLE
-
-## Known limits in this first version
-
-- Only the current working `FA` timer/family/mode decode is implemented
-- No full AI custom payload editor yet
-- No persistent local presets
-- No reconnect workflow beyond manual reconnect
-- No foot in / foot out editor because those commands were intentionally not promoted in your cleaned bundle
-
-## Recommended next pass
-
-The next best upgrade is not a framework rewrite. It is:
-
-1. add a **packet queue + pacing guard**
-2. add an **AI editor** for the `FCDC` family
-3. add **favorites + macros**
-4. then decide whether to keep Bluefy or wrap the same UI in MAUI / Capacitor
+The detailed capture backlog is in `SNIFF_TODO.md`.

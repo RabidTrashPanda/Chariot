@@ -4,60 +4,219 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Grand Duo Remote</title>
-  <meta name="theme-color" content="#0f172a" />
-  <link rel="manifest" href="./site.webmanifest" />
+  <meta name="theme-color" content="#0b1220" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar panel">
-      <div class="topbar-main">
-        <h1>Grand Duo Remote</h1>
-      </div>
-      <div class="topbar-actions">
-        <button id="connectBtn" class="primary">Connect</button>
-        <button id="disconnectBtn" disabled>Disconnect</button>
+  <div class="shell">
+    <header class="hero compact-hero">
+      <h1 class="hero-title">Grand Duo Remote</h1>
+      <div class="header-timer" aria-label="Timer">
+        <span class="header-timer-label">Timer</span>
+        <strong id="timerField" class="header-timer-value">--:--</strong>
       </div>
     </header>
 
-    <section class="status-strip panel" aria-label="Connection status">
-      <label class="field field-status">
-        <span>Status</span>
-        <input id="statusField" type="text" readonly value="Disconnected" />
-      </label>
-      <label class="field field-timer">
-        <span>Timer</span>
-        <input id="timerField" type="text" readonly value="--:--" />
-      </label>
-    </section>
+    <nav id="sectionNav" class="section-nav" aria-label="Sections"></nav>
 
-    <nav id="tabBar" class="tabbar panel" aria-label="Screens"></nav>
+    <main class="layout">
+      <section class="main-column tab-content">
+        <section id="connectPanel" class="panel connect-panel tab-panel" data-tab-key="session">
+          <div class="section-header-static">
+            <h2 class="section-title">Chair</h2>
+          </div>
+          <div class="section-body">
+            <div class="subgroup connect-group">
+              <h3>Chair</h3>
+              <div class="connect-actions">
+                <button id="connectBtn" class="primary toggle-chip">Connect</button>
+                <button id="pauseBtn" class="toggle-chip">Pause</button>
+                <button id="powerBtn" class="toggle-chip">Power On</button>
+              </div>
+              <div class="connect-status-row">
+                <div class="mini-field status-chip">
+                  <span>Status</span>
+                  <strong id="statusField">Disconnected</strong>
+                </div>
+              </div>
+            </div>
+            <div id="connectHealthMount"></div>
+          </div>
+        </section>
 
-    <main id="screens" class="screens"></main>
+        <div id="commandSections" class="sections"></div>
 
-    <details class="panel diagnostics">
-      <summary>Diagnostics</summary>
-      <div class="diagnostics-actions">
-        <button id="startupBtn" disabled>Resend Startup</button>
-      </div>
-      <div id="activityLog" class="log"></div>
-    </details>
+        <section id="healthPanel" class="panel health-panel hidden tab-panel" data-tab-key="health" aria-live="polite">
+          <div class="health-head">
+            <h2>Health Report</h2>
+            <div id="healthStatus" class="health-status">--</div>
+          </div>
+          <div class="health-grid">
+            <div class="metric-card">
+              <div class="metric-label">Heart Rate</div>
+              <div id="heartRateValue" class="metric-value">--</div>
+              <div id="heartRateState" class="metric-state">--</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Blood Oxygen</div>
+              <div id="bloodOxygenValue" class="metric-value">--</div>
+              <div id="bloodOxygenState" class="metric-state">--</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Microcirculation</div>
+              <div id="microValue" class="metric-value">--</div>
+              <div id="microState" class="metric-state">--</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Fatigue Level</div>
+              <div id="fatigueValue" class="metric-value">--</div>
+              <div id="fatigueState" class="metric-state">--</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="customAiPanel" class="panel ai-builder-panel tab-panel" data-tab-key="custom-ai">
+          <div class="ai-builder-inner">
+            <div class="builder-header">
+              <div>
+                <h2>Preset Builder</h2>
+                <p class="muted">Set each zone and shared options, then send the preset to the chair.</p>
+              </div>
+              <div class="hero-actions builder-actions">
+                <button id="aiAllKneadingBtn" type="button">All Kneading</button>
+                <button id="aiAllKnockingBtn" type="button">All Knocking</button>
+                <button id="aiAllShiatsuBtn" type="button">All Shiatsu</button>
+                <button id="aiClearBtn" type="button">Clear</button>
+              </div>
+            </div>
+
+            <div class="subgroup">
+              <h3>Zones</h3>
+              <div id="aiBuilderZoneRows" class="ai-zone-rows"></div>
+            </div>
+
+            <div class="subgroup">
+              <h3>Shared Options</h3>
+              <div class="ai-addon-grid">
+                <label class="field">
+                  <span>Shoulder Air</span>
+                  <select id="aiShoulderAir"></select>
+                </label>
+                <label class="field">
+                  <span>Waist Air</span>
+                  <select id="aiWaistAir"></select>
+                </label>
+                <label class="field">
+                  <span>Leg / Foot Air</span>
+                  <select id="aiLegAir"></select>
+                </label>
+                <label class="field">
+                  <span>Full Body Air</span>
+                  <select id="aiFullBodyAir"></select>
+                </label>
+                <label class="field">
+                  <span>Rollers</span>
+                  <select id="aiRollers"></select>
+                </label>
+              </div>
+              <p class="muted">Experimental AI heat surface mask. Use the Heat tab to set the universal heat stage for each surface.</p>
+              <div class="ai-experimental-grid">
+                <label class="check-chip experimental-chip"><input id="aiHeatRoller" type="checkbox" /> <span>Roller Heat Surface</span></label>
+                <label class="check-chip experimental-chip"><input id="aiHeatShawl" type="checkbox" /> <span>Shawl Heat Surface</span></label>
+                <label class="check-chip experimental-chip"><input id="aiHeatCalf" type="checkbox" /> <span>Calf Heat Surface</span></label>
+                <label class="check-chip experimental-chip"><input id="aiHeatFoot" type="checkbox" /> <span>Foot Heat Surface</span></label>
+              </div>
+            </div>
+
+            <div class="hero-actions builder-actions ai-send-row">
+              <button id="aiSendBtn" class="primary" type="button">Send Preset</button>
+            </div>
+
+            <div class="preset-save-row">
+              <input id="aiPresetName" type="text" placeholder="Preset name" />
+              <button id="aiSavePresetBtn" type="button">Save Preset</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="presetsPanel" class="panel presets-panel tab-panel" data-tab-key="presets">
+          <h2>Presets</h2>
+          <div class="presets-layout">
+            <div class="subgroup">
+              <h3>Saved Presets</h3>
+              <div id="savedAiPresetList" class="saved-list"></div>
+            </div>
+
+            <div class="subgroup">
+              <h3>Macro Builder</h3>
+              <label class="field">
+                <span>Macro Name</span>
+                <input id="macroName" type="text" placeholder="Morning reset" />
+              </label>
+              <div class="hero-actions builder-actions compact-actions">
+                <button id="addMacroCommandBtn" type="button">Add Command</button>
+                <button id="addMacroWaitBtn" type="button">Add Wait</button>
+                <button id="addMacroAiBtn" type="button">Add AI Preset</button>
+                <button id="saveMacroBtn" class="primary" type="button">Save Macro</button>
+              </div>
+              <div id="macroSteps" class="macro-steps"></div>
+            </div>
+
+            <div class="subgroup">
+              <h3>Saved Macros</h3>
+              <div id="savedMacroList" class="saved-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="settingsPanel" class="panel settings-panel tab-panel" data-tab-key="settings">
+          <h2>Settings</h2>
+          <div class="settings-layout">
+            <div class="subgroup">
+              <h3>Aromatherapy Labels</h3>
+              <div class="settings-grid">
+                <label class="field"><span>Slot 1</span><input id="aromaName1" type="text" placeholder="Aroma 1" /></label>
+                <label class="field"><span>Slot 2</span><input id="aromaName2" type="text" placeholder="Aroma 2" /></label>
+                <label class="field"><span>Slot 3</span><input id="aromaName3" type="text" placeholder="Aroma 3" /></label>
+                <label class="field"><span>Slot 4</span><input id="aromaName4" type="text" placeholder="Aroma 4" /></label>
+                <label class="field"><span>Slot 5</span><input id="aromaName5" type="text" placeholder="Aroma 5" /></label>
+              </div>
+              <div class="hero-actions builder-actions compact-actions">
+                <button id="saveSettingsBtn" type="button">Save Settings</button>
+                <button id="resetSettingsBtn" type="button">Reset Aroma Labels</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="logsPanel" class="panel logs-panel tab-panel" data-tab-key="logs">
+          <div class="logs-layout">
+            <section class="subgroup">
+              <h3>Command History</h3>
+              <div id="commandHistory" class="log"></div>
+            </section>
+            <section class="subgroup">
+              <h3>Recent Notifications</h3>
+              <div id="notifyLog" class="log"></div>
+            </section>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Grand Duo Remote</span>
+      <span id="mapVersion"></span>
+    </footer>
   </div>
 
-  <dialog id="deviceDialog" class="device-dialog">
-    <form method="dialog" class="device-dialog-card">
-      <h2>Choose Chair</h2>
-      <div id="deviceChoices" class="device-choices"></div>
-      <menu>
-        <button value="cancel">Cancel</button>
-      </menu>
-    </form>
-  </dialog>
-
   <template id="commandButtonTemplate">
-    <button class="command-button" type="button"></button>
+    <button class="command-button">
+      <span class="command-label"></span>
+      <span class="command-meta"></span>
+    </button>
   </template>
 
-  <script type="module" src="./app.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>

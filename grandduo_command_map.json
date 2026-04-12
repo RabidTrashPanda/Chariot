@@ -1,5 +1,5 @@
 {
-  "map_revision": "2026-04-12c",
+  "map_revision": "phase19-experimental",
   "map_updated_on": "2026-04-12",
   "project": "Grand Duo chair command map",
   "purpose": "Grand Duo chair BLE command dictionary and UI source of truth.",
@@ -170,10 +170,13 @@
         "packets": [
           "F100204161"
         ],
-        "status": "observed_probable",
-        "effect": "Selects gentle massage mode / intensity style.",
+        "status": "confirmed",
+        "effect": "Selects Gentle massage mode.",
         "family": "F100",
-        "requires_startup": true
+        "requires_startup": true,
+        "evidence": [
+          "ChairAiMassageLog shows F100204161 clustered with Mild and Strong mode selections."
+        ]
       },
       {
         "name": "mild",
@@ -200,16 +203,55 @@
     ],
     "body_scan_and_health": [
       {
-        "name": "body_measurement_routine",
-        "label": "Body measurement routine window",
-        "packets": [],
-        "status": "observed_state_transition_only",
-        "effect": "Chair entered body measurement routine after synchronized selection; exact trigger boundary still unresolved.",
-        "family": "unknown",
-        "requires_startup": true
+        "name": "health_test_stop",
+        "label": "Health Stop",
+        "packets": [
+          "F100214A6B"
+        ],
+        "status": "observed",
+        "effect": "Stops or exits the health test workflow.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "ManualLower capture: stop health test."
+      },
+      {
+        "name": "health_test_start",
+        "label": "Health Start",
+        "packets": [
+          "F100214968"
+        ],
+        "status": "observed",
+        "effect": "Starts the health test workflow.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "ManualLower capture: start health test."
+      },
+      {
+        "name": "ai_recommendation",
+        "label": "AI Recommendation",
+        "packets": [
+          "F100009D9D"
+        ],
+        "status": "observed_contextual",
+        "effect": "Triggers Health Recommendation from the health workflow; the chair then chooses an appropriate existing massage program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "Observed in the health menu. Treat this as a recommendation trigger, not as a fixed hidden massage program."
       }
     ],
     "air_pressure": [
+      {
+        "name": "air_pressure_0",
+        "label": "Air Pressure Off (Experimental)",
+        "packets": [
+          "F100006F6F"
+        ],
+        "status": "experimental",
+        "effect": "Experimental candidate for setting air pressure to 0 / airbags off from the universal pressure family.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "Not capture-backed yet. Added as a cautious ordinal extension of the observed air pressure 1-5 family."
+      },
       {
         "name": "air_pressure_1",
         "label": "Air Pressure 1",
@@ -268,24 +310,36 @@
     ],
     "rollers_non_ai": [
       {
+        "name": "foot_rollers_0",
+        "label": "Rollers Off",
+        "packets": [
+          "F10000CBCB"
+        ],
+        "status": "observed",
+        "effect": "Turns the generic/non-AI rollers off. In ManualLower this matches the foot roller family off packet.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "ManualLower generic rollers off and manual foot roller off used the same packet."
+      },
+      {
         "name": "foot_rollers_1",
-        "label": "Foot Rollers 1",
+        "label": "Rollers 1",
         "packets": [
           "F10000CCCC"
         ],
-        "status": "observed_probable",
-        "effect": "Sets non-AI roller level / mode to foot rollers 1.",
+        "status": "observed",
+        "effect": "Sets the generic/non-AI roller level to 1. In ManualLower this matches the foot roller family.",
         "family": "F100",
         "requires_startup": true
       },
       {
         "name": "foot_rollers_2",
-        "label": "Foot Rollers 2",
+        "label": "Rollers 2",
         "packets": [
           "F10000CDCD"
         ],
-        "status": "observed_probable",
-        "effect": "Sets non-AI roller level / mode to foot rollers 2.",
+        "status": "observed",
+        "effect": "Sets the generic/non-AI roller level to 2. In ManualLower this matches the foot roller family.",
         "family": "F100",
         "requires_startup": true
       }
@@ -549,24 +603,36 @@
     ],
     "session_time": [
       {
-        "name": "minus_10_minutes",
-        "label": "-10 Minutes",
+        "name": "session_time_10",
+        "label": "10 Minutes",
+        "packets": [
+          "F10000C1C1"
+        ],
+        "status": "observed",
+        "effect": "Sets remaining session time to 10 minutes.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "FinalCap capture-backed."
+      },
+      {
+        "name": "session_time_20",
+        "label": "20 Minutes",
         "packets": [
           "F10000C2C2"
         ],
         "status": "observed",
-        "effect": "Subtracts 10 minutes from session time.",
+        "effect": "Sets remaining session time to 20 minutes.",
         "family": "F100",
         "requires_startup": true
       },
       {
-        "name": "plus_10_minutes",
-        "label": "+10 Minutes",
+        "name": "session_time_30",
+        "label": "30 Minutes",
         "packets": [
           "F10000C3C3"
         ],
         "status": "observed",
-        "effect": "Adds 10 minutes to session time.",
+        "effect": "Sets remaining session time to 30 minutes.",
         "family": "F100",
         "requires_startup": true
       }
@@ -813,12 +879,13 @@
         "name": "lower_4d_1",
         "label": "Lower 4D 1",
         "packets": [
-          "F102005557"
+          "F102005052"
         ],
         "status": "observed",
         "effect": "Lower 4D strength 1.",
         "family": "F102",
-        "requires_startup": true
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
       },
       {
         "name": "lower_4d_2",
@@ -945,17 +1012,6 @@
       }
     ],
     "ai_addons_and_tuning": [
-      {
-        "name": "ai_all_heat_on",
-        "label": "AI All Heat ON",
-        "packets": [
-          "FCDC0015000033000051000024000000004BFA"
-        ],
-        "status": "observed",
-        "effect": "AI custom state with all heat zones on.",
-        "family": "FCDC",
-        "requires_startup": true
-      },
       {
         "name": "ai_full_body_air_5",
         "label": "AI Full Body Air 5",
@@ -1087,14 +1143,1207 @@
         "effect": "AI custom calf rollers level 2; observed to require leg/foot air enabled.",
         "family": "FCDC",
         "requires_startup": true
+      },
+      {
+        "name": "ai_heat_mask_all_off",
+        "label": "AI Heat Mask: All Off",
+        "packets": [
+          "FCDC00003300003300003300003300000000FA"
+        ],
+        "status": "observed",
+        "effect": "Observed AI custom state with all heat surfaces off.",
+        "family": "FCDC",
+        "requires_startup": true,
+        "notes": "FinalCap capture-backed. Treat as an AI heat surface mask state, not a universal heat command."
+      },
+      {
+        "name": "ai_heat_mask_calf_only",
+        "label": "AI Heat Mask: Calf Only",
+        "packets": [
+          "FCDC00003300003300003300003300000002FA"
+        ],
+        "status": "observed",
+        "effect": "Observed AI custom state with calf heat surface enabled.",
+        "family": "FCDC",
+        "requires_startup": true,
+        "notes": "FinalCap capture-backed. Treat as an AI heat surface mask state, not a universal heat command."
+      },
+      {
+        "name": "ai_heat_mask_foot_only",
+        "label": "AI Heat Mask: Foot Only",
+        "packets": [
+          "FCDC00003300003300003300003300000008FA"
+        ],
+        "status": "observed",
+        "effect": "Observed AI custom state with foot heat surface enabled.",
+        "family": "FCDC",
+        "requires_startup": true,
+        "notes": "FinalCap capture-backed. Treat as an AI heat surface mask state, not a universal heat command."
+      },
+      {
+        "name": "ai_heat_mask_shawl_calf",
+        "label": "AI Heat Mask: Shawl + Calf",
+        "packets": [
+          "FCDC00003300003300003300003300000003FA"
+        ],
+        "status": "observed",
+        "effect": "Observed AI custom state with shawl and calf heat surfaces enabled.",
+        "family": "FCDC",
+        "requires_startup": true,
+        "notes": "FinalCap capture-backed. Treat as an AI heat surface mask state, not a universal heat command."
+      },
+      {
+        "name": "ai_heat_mask_shawl_foot",
+        "label": "AI Heat Mask: Shawl + Foot",
+        "packets": [
+          "FCDC00003300003300003300003300000009FA"
+        ],
+        "status": "observed",
+        "effect": "Observed AI custom state with shawl and foot heat surfaces enabled.",
+        "family": "FCDC",
+        "requires_startup": true,
+        "notes": "FinalCap capture-backed. Treat as an AI heat surface mask state, not a universal heat command."
+      },
+      {
+        "name": "ai_heat_mask_all_on",
+        "label": "AI Heat Mask: All On",
+        "packets": [
+          "FCDC0000330000330000330000330000004BFA"
+        ],
+        "status": "observed",
+        "effect": "Observed AI custom state with all four heat surfaces enabled.",
+        "family": "FCDC",
+        "requires_startup": true,
+        "notes": "FinalCap capture-backed. Treat as an AI heat surface mask state, not a universal heat command."
+      }
+    ],
+    "leg_rest_motion": [
+      {
+        "name": "leg_rest_up_start",
+        "label": "Leg Rest Up (hold start)",
+        "packets": [
+          "F100008080"
+        ],
+        "status": "observed",
+        "effect": "Starts leg-rest upward motion; continue until stop/release or mechanical limit.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "Use in timed macros: start, wait, stop."
+      },
+      {
+        "name": "leg_rest_down_start",
+        "label": "Leg Rest Down (hold start)",
+        "packets": [
+          "F100008181"
+        ],
+        "status": "observed",
+        "effect": "Starts leg-rest downward motion; continue until stop/release or mechanical limit.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "New from TimedPass2."
+      },
+      {
+        "name": "leg_rest_stop",
+        "label": "Leg Rest Stop / Release",
+        "packets": [
+          "F100008282"
+        ],
+        "status": "observed",
+        "effect": "Stops leg-rest motion / release after hold movement.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "Corrected semantics; older scripts mislabeled this as legs down preset."
+      }
+    ],
+    "back_rest_motion": [
+      {
+        "name": "back_rest_up_start",
+        "label": "Back Rest Up (hold start)",
+        "packets": [
+          "F100008383"
+        ],
+        "status": "observed",
+        "effect": "Starts back-rest upward motion; continue until stop/release or mechanical limit.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 hold motion family."
+      },
+      {
+        "name": "back_rest_down_start",
+        "label": "Back Rest Down (hold start)",
+        "packets": [
+          "F100008484"
+        ],
+        "status": "observed",
+        "effect": "Starts back-rest downward motion; continue until stop/release or mechanical limit.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 hold motion family."
+      },
+      {
+        "name": "back_rest_stop",
+        "label": "Back Rest Stop / Release",
+        "packets": [
+          "F100008585"
+        ],
+        "status": "observed",
+        "effect": "Stops back-rest motion / release after hold movement.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 hold motion family."
+      }
+    ],
+    "foot_rest_motion": [
+      {
+        "name": "foot_rest_down_start",
+        "label": "Foot Rest Out (hold start)",
+        "packets": [
+          "F100008686"
+        ],
+        "status": "observed",
+        "effect": "Starts foot-rest outward motion; continue until stop/release or mechanical limit.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 note called this foot down, but motion corresponds to foot out."
+      },
+      {
+        "name": "foot_rest_up_start",
+        "label": "Foot Rest In (hold start)",
+        "packets": [
+          "F100008787"
+        ],
+        "status": "observed",
+        "effect": "Starts foot-rest inward motion; continue until stop/release or mechanical limit.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 note called this foot up, but motion corresponds to foot in."
+      },
+      {
+        "name": "foot_rest_stop",
+        "label": "Foot Rest Stop",
+        "packets": [
+          "F100008888"
+        ],
+        "status": "observed",
+        "effect": "Stops foot-rest motion / release after hold movement.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 hold motion family."
+      }
+    ],
+    "manual_upper_modes": [
+      {
+        "name": "manual_upper_knead_tap",
+        "label": "Manual Upper: Knead + Tap",
+        "packets": [
+          "F101003A3B"
+        ],
+        "status": "observed",
+        "effect": "Sets the upper manual massage mode to knead + tap.",
+        "family": "F101",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~600s"
+      },
+      {
+        "name": "manual_upper_shiatsu",
+        "label": "Manual Upper: Shiatsu",
+        "packets": [
+          "F101003839"
+        ],
+        "status": "observed",
+        "effect": "Sets the upper manual massage mode to shiatsu.",
+        "family": "F101",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~622s"
+      },
+      {
+        "name": "manual_upper_tap",
+        "label": "Manual Upper: Tap",
+        "packets": [
+          "F101003637"
+        ],
+        "status": "observed",
+        "effect": "Sets the upper manual massage mode to tap.",
+        "family": "F101",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~631s"
+      },
+      {
+        "name": "manual_upper_knock",
+        "label": "Manual Upper: Knock",
+        "packets": [
+          "F101003435"
+        ],
+        "status": "observed",
+        "effect": "Sets the upper manual massage mode to knock.",
+        "family": "F101",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~637s"
+      },
+      {
+        "name": "manual_upper_knead",
+        "label": "Manual Upper: Knead",
+        "packets": [
+          "F101003233"
+        ],
+        "status": "observed",
+        "effect": "Sets the upper manual massage mode to knead.",
+        "family": "F101",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~643s"
+      }
+    ],
+    "manual_upper_position": [
+      {
+        "name": "manual_upper_whole",
+        "label": "Manual Upper Position: Whole",
+        "packets": [
+          "F101004140"
+        ],
+        "status": "observed",
+        "effect": "Switches the upper manual cursor to whole mode.",
+        "family": "F101",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      },
+      {
+        "name": "manual_upper_partial",
+        "label": "Manual Upper Position: Partial",
+        "packets": [
+          "F101004243"
+        ],
+        "status": "observed",
+        "effect": "Switches the upper manual cursor to partial mode.",
+        "family": "F101",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~653s"
+      },
+      {
+        "name": "manual_upper_point",
+        "label": "Manual Upper Position: Point",
+        "packets": [
+          "F101004544"
+        ],
+        "status": "observed",
+        "effect": "Switches the upper manual cursor to point mode.",
+        "family": "F101",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~662s"
+      },
+      {
+        "name": "manual_upper_move_up_start",
+        "label": "Manual Upper Position Up (hold start)",
+        "packets": [
+          "F101004647"
+        ],
+        "status": "observed",
+        "effect": "Moves the upper manual cursor upward until stopped.",
+        "family": "F101",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~670-680s"
+      },
+      {
+        "name": "manual_upper_move_down_start",
+        "label": "Manual Upper Position Down (hold start)",
+        "packets": [
+          "F101004746"
+        ],
+        "status": "observed",
+        "effect": "Moves the upper manual cursor downward until stopped.",
+        "family": "F101",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~689-704s"
+      },
+      {
+        "name": "manual_upper_move_stop",
+        "label": "Manual Upper Position Stop / Release",
+        "packets": [
+          "F101004849"
+        ],
+        "status": "observed",
+        "effect": "Stops the upper manual cursor movement.",
+        "family": "F101",
+        "requires_startup": true,
+        "notes": "TimedPass2 position hold family"
+      }
+    ],
+    "manual_air_regions": [
+      {
+        "name": "manual_air_full",
+        "label": "Manual Air: Full",
+        "packets": [
+          "F100006060"
+        ],
+        "status": "observed",
+        "effect": "Routes manual air pressure to full body.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~732s"
+      },
+      {
+        "name": "manual_air_arm_shoulder",
+        "label": "Manual Air: Arm / Shoulder",
+        "packets": [
+          "F100006464"
+        ],
+        "status": "observed",
+        "effect": "Routes manual air pressure to arm / shoulder.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~739s"
+      },
+      {
+        "name": "manual_air_waist_seat",
+        "label": "Manual Air: Waist / Seat",
+        "packets": [
+          "F100006666"
+        ],
+        "status": "observed",
+        "effect": "Routes manual air pressure to waist / seat.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~747s"
+      },
+      {
+        "name": "manual_air_leg_foot",
+        "label": "Manual Air: Leg / Foot",
+        "packets": [
+          "F100006A6A"
+        ],
+        "status": "observed",
+        "effect": "Routes manual air pressure to leg / foot.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~756s"
+      }
+    ],
+    "manual_lower_mechanism": [
+      {
+        "name": "manual_lower_knead_tap",
+        "label": "Manual Lower Mechanism: Knead + Tap",
+        "packets": [
+          "F102003A38"
+        ],
+        "status": "observed",
+        "effect": "Sets the lower mechanism to knead + tap in manual mode.",
+        "family": "F102",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      },
+      {
+        "name": "manual_lower_knead",
+        "label": "Manual Lower Mechanism: Knead",
+        "packets": [
+          "F102003230"
+        ],
+        "status": "observed",
+        "effect": "Sets the lower mechanism to knead in manual mode.",
+        "family": "F102",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      },
+      {
+        "name": "manual_lower_knock",
+        "label": "Manual Lower Mechanism: Knock",
+        "packets": [
+          "F102003436"
+        ],
+        "status": "observed",
+        "effect": "Sets the lower mechanism to knock in manual mode.",
+        "family": "F102",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      },
+      {
+        "name": "manual_lower_shiatsu",
+        "label": "Manual Lower Mechanism: Shiatsu",
+        "packets": [
+          "F10200383A"
+        ],
+        "status": "observed",
+        "effect": "Sets the lower mechanism to shiatsu in manual mode.",
+        "family": "F102",
+        "requires_startup": true,
+        "notes": "Capture-backed."
+      },
+      {
+        "name": "manual_lower_tap",
+        "label": "Manual Lower Mechanism: Tap",
+        "packets": [
+          "F102003634"
+        ],
+        "status": "observed",
+        "effect": "Sets the lower mechanism to tap in manual mode.",
+        "family": "F102",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      }
+    ],
+    "settings_voice_and_led": [
+      {
+        "name": "voice_on",
+        "label": "Voice On",
+        "packets": [
+          "F100001515"
+        ],
+        "status": "observed",
+        "effect": "Enables voice prompts.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1242s"
+      },
+      {
+        "name": "voice_off",
+        "label": "Voice Off",
+        "packets": [
+          "F100001B1B"
+        ],
+        "status": "observed",
+        "effect": "Disables voice prompts.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1237s / ~1247s"
+      },
+      {
+        "name": "led_on",
+        "label": "LED On",
+        "packets": [
+          "F100203212"
+        ],
+        "status": "observed",
+        "effect": "Enables LED lighting.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1261s"
+      },
+      {
+        "name": "led_off",
+        "label": "LED Off",
+        "packets": [
+          "F100203313"
+        ],
+        "status": "observed",
+        "effect": "Disables LED lighting.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1256s / ~1265s"
+      }
+    ],
+    "program_healing": [
+      {
+        "name": "healing_mobility",
+        "label": "Healing: Mobility",
+        "packets": [
+          "F100223B19"
+        ],
+        "status": "observed",
+        "effect": "Starts Healing / Mobility program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~798s"
+      },
+      {
+        "name": "healing_revitalize",
+        "label": "Healing: Revitalize",
+        "packets": [
+          "F100223A18"
+        ],
+        "status": "observed",
+        "effect": "Starts Healing / Revitalize program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~815s"
+      },
+      {
+        "name": "healing_rejuvenation",
+        "label": "Healing: Rejuvenation",
+        "packets": [
+          "F10022391B"
+        ],
+        "status": "observed",
+        "effect": "Starts Healing / Rejuvenation program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~832s"
+      },
+      {
+        "name": "healing_circulation",
+        "label": "Healing: Circulation",
+        "packets": [
+          "F10022381A"
+        ],
+        "status": "observed",
+        "effect": "Starts Healing / Circulation program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~843s"
+      },
+      {
+        "name": "healing_upper_back",
+        "label": "Healing: Upper Back",
+        "packets": [
+          "F100223715"
+        ],
+        "status": "observed",
+        "effect": "Starts Healing / Upper Back program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~853s"
+      }
+    ],
+    "program_international": [
+      {
+        "name": "international_hong_kong",
+        "label": "International: Hong Kong",
+        "packets": [
+          "F100222301"
+        ],
+        "status": "observed",
+        "effect": "Starts International / Hong Kong program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~871s"
+      },
+      {
+        "name": "international_thai_stretch",
+        "label": "International: Thai Stretch",
+        "packets": [
+          "F100222406"
+        ],
+        "status": "observed",
+        "effect": "Starts International / Thai Stretch program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~883s"
+      },
+      {
+        "name": "international_korean_style",
+        "label": "International: Korean Style",
+        "packets": [
+          "F100222507"
+        ],
+        "status": "observed",
+        "effect": "Starts International / Korean Style program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~896s"
+      },
+      {
+        "name": "international_japanese_shiatsu",
+        "label": "International: Japanese Shiatsu",
+        "packets": [
+          "F100222604"
+        ],
+        "status": "observed",
+        "effect": "Starts International / Japanese Shiatsu program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~908s"
+      },
+      {
+        "name": "international_swedish_style",
+        "label": "International: Swedish Style",
+        "packets": [
+          "F100222705"
+        ],
+        "status": "observed",
+        "effect": "Starts International / Swedish Style program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~920s"
+      }
+    ],
+    "program_point_massage": [
+      {
+        "name": "point_massage_back",
+        "label": "Point Massage: Back",
+        "packets": [
+          "F100009393"
+        ],
+        "status": "observed",
+        "effect": "Starts Point Massage / Back program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~932s"
+      },
+      {
+        "name": "point_massage_neck_stretch",
+        "label": "Point Massage: Neck Stretch",
+        "packets": [
+          "F100009C9C"
+        ],
+        "status": "observed",
+        "effect": "Starts Point Massage / Neck Stretch program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~943s"
+      },
+      {
+        "name": "point_massage_spinal_care",
+        "label": "Point Massage: Spinal Care",
+        "packets": [
+          "F100009D9D"
+        ],
+        "status": "observed",
+        "effect": "Starts Point Massage / Spinal Care program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~953s"
+      },
+      {
+        "name": "point_massage_waist_glutes",
+        "label": "Point Massage: Waist and Glutes",
+        "packets": [
+          "F100009E9E"
+        ],
+        "status": "observed",
+        "effect": "Starts Point Massage / Waist and Glutes program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~963s"
+      },
+      {
+        "name": "point_massage_leg_foot",
+        "label": "Point Massage: Leg and Foot",
+        "packets": [
+          "F100009F9F"
+        ],
+        "status": "observed",
+        "effect": "Starts Point Massage / Leg and Foot program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~975s"
+      }
+    ],
+    "program_calming": [
+      {
+        "name": "calming_relax",
+        "label": "Calming: Relax",
+        "packets": [
+          "F100009696"
+        ],
+        "status": "observed",
+        "effect": "Starts Calming / Relax program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~985s"
+      },
+      {
+        "name": "calming_vitality",
+        "label": "Calming: Vitality",
+        "packets": [
+          "F100009898"
+        ],
+        "status": "observed",
+        "effect": "Starts Calming / Vitality program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~996s"
+      },
+      {
+        "name": "calming_morning_care",
+        "label": "Calming: Morning Care",
+        "packets": [
+          "F100002121"
+        ],
+        "status": "observed",
+        "effect": "Starts Calming / Morning Care program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1004s"
+      },
+      {
+        "name": "calming_midday_care",
+        "label": "Calming: Midday Care",
+        "packets": [
+          "F100002323"
+        ],
+        "status": "observed",
+        "effect": "Starts Calming / Midday Care program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1014s"
+      },
+      {
+        "name": "calming_night_care",
+        "label": "Calming: Night Care",
+        "packets": [
+          "F100002525"
+        ],
+        "status": "observed",
+        "effect": "Starts Calming / Night Care program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1024s"
+      }
+    ],
+    "program_focused": [
+      {
+        "name": "focused_neck_shoulder",
+        "label": "Focused: Neck and Shoulder",
+        "packets": [
+          "F100222002"
+        ],
+        "status": "observed",
+        "effect": "Starts Focused / Neck and Shoulder program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1042s"
+      },
+      {
+        "name": "focused_office_relief",
+        "label": "Focused: Office Relief",
+        "packets": [
+          "F100222103"
+        ],
+        "status": "observed",
+        "effect": "Starts Focused / Office Relief program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1051s"
+      },
+      {
+        "name": "focused_recharge",
+        "label": "Focused: Recharge",
+        "packets": [
+          "F100222200"
+        ],
+        "status": "observed",
+        "effect": "Starts Focused / Recharge program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1062s"
+      },
+      {
+        "name": "focused_upper_body",
+        "label": "Focused: Upper Body",
+        "packets": [
+          "F100002727"
+        ],
+        "status": "confirmed",
+        "effect": "Starts Focused / Upper Body program.",
+        "family": "F100",
+        "requires_startup": true,
+        "evidence": [
+          "TimedPass2 annotates the Focused / Upper Body step and matches F100002727."
+        ]
+      },
+      {
+        "name": "focused_lower_body",
+        "label": "Focused: Lower Body",
+        "packets": [
+          "F100002828"
+        ],
+        "status": "confirmed",
+        "effect": "Starts Focused / Lower Body program.",
+        "family": "F100",
+        "requires_startup": true,
+        "evidence": [
+          "TimedPass2 annotates the Focused / Lower Body step and matches F100002828."
+        ]
+      }
+    ],
+    "program_sports_recovery": [
+      {
+        "name": "sports_upper_body",
+        "label": "Sports Recovery: Upper Body",
+        "packets": [
+          "F100009191"
+        ],
+        "status": "observed",
+        "effect": "Starts Sports Recovery / Upper Body program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1071s"
+      },
+      {
+        "name": "sports_fatigue_relief",
+        "label": "Sports Recovery: Fatigue Relief",
+        "packets": [
+          "F100009292"
+        ],
+        "status": "observed",
+        "effect": "Starts Sports Recovery / Fatigue Relief program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1111s"
+      },
+      {
+        "name": "sports_lower_body_relax",
+        "label": "Sports Recovery: Lower Body Relax",
+        "packets": [
+          "F100009494"
+        ],
+        "status": "observed",
+        "effect": "Starts Sports Recovery / Lower Body Relax program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1122s"
+      }
+    ],
+    "program_full_body": [
+      {
+        "name": "full_body_quick_demo",
+        "label": "Full Body: Quick Demo",
+        "packets": [
+          "F100001E1E"
+        ],
+        "status": "observed",
+        "effect": "Starts Full Body / Quick Demo program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1145s"
+      },
+      {
+        "name": "full_body_unwind",
+        "label": "Full Body: Unwind",
+        "packets": [
+          "F100002020"
+        ],
+        "status": "observed",
+        "effect": "Starts Full Body / Unwind program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1154s"
+      },
+      {
+        "name": "full_body_recovery",
+        "label": "Full Body: Recovery",
+        "packets": [
+          "F100002222"
+        ],
+        "status": "observed",
+        "effect": "Starts Full Body / Recovery program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1161s"
+      },
+      {
+        "name": "full_body_stretch",
+        "label": "Full Body: Stretch",
+        "packets": [
+          "F100002424"
+        ],
+        "status": "observed",
+        "effect": "Starts Full Body / Stretch program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1169s"
+      },
+      {
+        "name": "full_body_gentle",
+        "label": "Full Body: Gentle",
+        "packets": [
+          "F100009595"
+        ],
+        "status": "observed",
+        "effect": "Starts Full Body / Gentle program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1183s"
+      },
+      {
+        "name": "full_body_meditation",
+        "label": "Full Body: Meditation",
+        "packets": [
+          "F100222D0F"
+        ],
+        "status": "observed",
+        "effect": "Starts Full Body / Meditation program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1193s"
+      },
+      {
+        "name": "full_body_synchronized",
+        "label": "Full Body: Synchronized",
+        "packets": [
+          "F100223210"
+        ],
+        "status": "observed",
+        "effect": "Starts Full Body / Synchronized program.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "TimedPass2 @ ~1203s"
+      }
+    ],
+    "auxiliary_tablet_navigation": [
+      {
+        "name": "tablet_nav_up_or_step_a",
+        "label": "Tablet Nav Up / Step A",
+        "packets": [
+          "F101005C5D"
+        ],
+        "status": "observed_contextual",
+        "effect": "Observed only in tablet-side navigation before later chair actions; no direct chair motion was isolated from this packet alone.",
+        "family": "F101",
+        "requires_startup": true,
+        "evidence": [
+          "TimedPass2 groups this family under the screen-navigation sequence noted as up/down/ok with no direct chair movement."
+        ]
+      },
+      {
+        "name": "tablet_nav_down_or_step_b",
+        "label": "Tablet Nav Down / Step B",
+        "packets": [
+          "F101005D5C"
+        ],
+        "status": "observed_contextual",
+        "effect": "Observed only in tablet-side navigation before later chair actions; no direct chair motion was isolated from this packet alone.",
+        "family": "F101",
+        "requires_startup": true,
+        "evidence": [
+          "TimedPass2 groups this family under the screen-navigation sequence noted as up/down/ok with no direct chair movement."
+        ]
+      },
+      {
+        "name": "tablet_nav_confirm_or_release",
+        "label": "Tablet Nav Confirm / Release",
+        "packets": [
+          "F101005E5F"
+        ],
+        "status": "observed_contextual",
+        "effect": "Observed interleaved with the tablet-side navigation packets above; treated as confirm/release-style auxiliary navigation until a cleaner isolated capture proves more.",
+        "family": "F101",
+        "requires_startup": true,
+        "evidence": [
+          "Appears repeatedly between the other navigation packets in TimedPass2 and Chair Tablet Session."
+        ]
+      },
+      {
+        "name": "tablet_context_transition",
+        "label": "Tablet Context Transition",
+        "packets": [
+          "F100214B6A"
+        ],
+        "status": "observed_contextual",
+        "effect": "Observed as a tablet-side context/screen transition before later chair actions. A direct standalone chair effect is not yet isolated from the uploaded captures.",
+        "family": "F100",
+        "requires_startup": true,
+        "evidence": [
+          "Observed in Chair Tablet Session and PauseChangeProgram immediately before subsequent state changes."
+        ]
+      }
+    ],
+    "manual_lower_speed": [
+      {
+        "name": "manual_lower_speed_1",
+        "label": "Manual Lower Speed 1",
+        "packets": [
+          "F102005153"
+        ],
+        "status": "observed",
+        "effect": "Sets manual lower mechanism speed to 1.",
+        "family": "F102",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      },
+      {
+        "name": "manual_lower_speed_2",
+        "label": "Manual Lower Speed 2",
+        "packets": [
+          "F102005250"
+        ],
+        "status": "observed",
+        "effect": "Sets manual lower mechanism speed to 2.",
+        "family": "F102",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      },
+      {
+        "name": "manual_lower_speed_3",
+        "label": "Manual Lower Speed 3",
+        "packets": [
+          "F102005351"
+        ],
+        "status": "observed",
+        "effect": "Sets manual lower mechanism speed to 3.",
+        "family": "F102",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      },
+      {
+        "name": "manual_lower_speed_4",
+        "label": "Manual Lower Speed 4",
+        "packets": [
+          "F102005456"
+        ],
+        "status": "observed",
+        "effect": "Sets manual lower mechanism speed to 4.",
+        "family": "F102",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      },
+      {
+        "name": "manual_lower_speed_5",
+        "label": "Manual Lower Speed 5",
+        "packets": [
+          "F102005557"
+        ],
+        "status": "observed",
+        "effect": "Sets manual lower mechanism speed to 5.",
+        "family": "F102",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      }
+    ],
+    "manual_lower_position": [
+      {
+        "name": "manual_lower_whole",
+        "label": "Manual Lower Position: Whole",
+        "packets": [
+          "F102004143"
+        ],
+        "status": "observed",
+        "effect": "Switches the lower manual cursor to whole mode.",
+        "family": "F102",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      },
+      {
+        "name": "manual_lower_partial",
+        "label": "Manual Lower Position: Partial",
+        "packets": [
+          "F102004240"
+        ],
+        "status": "observed",
+        "effect": "Switches the lower manual cursor to partial mode.",
+        "family": "F102",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      },
+      {
+        "name": "manual_lower_point",
+        "label": "Manual Lower Position: Point",
+        "packets": [
+          "F102004547"
+        ],
+        "status": "observed",
+        "effect": "Switches the lower manual cursor to point mode.",
+        "family": "F102",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      }
+    ],
+    "manual_lower_position_motion": [
+      {
+        "name": "manual_lower_move_up_start",
+        "label": "Manual Lower Position Up (hold start)",
+        "packets": [
+          "F102004644"
+        ],
+        "status": "observed",
+        "effect": "Moves the lower manual cursor upward until stopped.",
+        "family": "F102",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed; parity matches upper track family."
+      },
+      {
+        "name": "manual_lower_move_down_start",
+        "label": "Manual Lower Position Down (hold start)",
+        "packets": [
+          "F102004745"
+        ],
+        "status": "observed",
+        "effect": "Moves the lower manual cursor downward until stopped.",
+        "family": "F102",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed; parity matches upper track family."
+      },
+      {
+        "name": "manual_lower_move_stop",
+        "label": "Manual Lower Position Stop / Release",
+        "packets": [
+          "F10200484A"
+        ],
+        "status": "observed",
+        "effect": "Stops the lower manual cursor movement.",
+        "family": "F102",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed; parity matches upper track family."
+      }
+    ],
+    "manual_roller_regions": [
+      {
+        "name": "foot_rollers_0",
+        "label": "Foot Rollers Off",
+        "packets": [
+          "F10000CBCB"
+        ],
+        "status": "observed",
+        "effect": "Turns foot rollers off.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      },
+      {
+        "name": "foot_rollers_1",
+        "label": "Foot Rollers 1",
+        "packets": [
+          "F10000CCCC"
+        ],
+        "status": "observed",
+        "effect": "Sets foot rollers to level 1.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      },
+      {
+        "name": "foot_rollers_2",
+        "label": "Foot Rollers 2",
+        "packets": [
+          "F10000CDCD"
+        ],
+        "status": "observed",
+        "effect": "Sets foot rollers to level 2.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      },
+      {
+        "name": "calf_rollers_0",
+        "label": "Calf Rollers Off",
+        "packets": [
+          "F10000C6C6"
+        ],
+        "status": "observed",
+        "effect": "Turns calf rollers off.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      },
+      {
+        "name": "calf_rollers_1",
+        "label": "Calf Rollers 1",
+        "packets": [
+          "F10000C7C7"
+        ],
+        "status": "observed",
+        "effect": "Sets calf rollers to level 1.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
+      },
+      {
+        "name": "calf_rollers_2",
+        "label": "Calf Rollers 2",
+        "packets": [
+          "F10000C8C8"
+        ],
+        "status": "observed",
+        "effect": "Sets calf rollers to level 2.",
+        "family": "F100",
+        "requires_startup": true,
+        "notes": "ManualLower capture-backed."
       }
     ]
   },
   "bundle_note": {
-    "generated_at": "2026-04-11",
+    "generated_at": "2026-04-12",
     "notes": [
-      "Only chair commands and active protocol notes are kept in this map.",
-      "Historical guesses, failed vendor dialects, and capture backlog notes were removed from the published dictionary."
+      "Phase19 adds timer 10 minutes, experimental air-pressure-off, and AI heat surface mask controls.",
+      "Manual air Off in the UI now sends the experimental air_pressure_0 candidate packet F100006F6F.",
+      "Heat levels remain universal chair controls; AI heat surface selection is treated as an experimental FCDC mask."
     ]
   }
 }
