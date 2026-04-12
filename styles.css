@@ -1,0 +1,359 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: dark;
+  --bg: #0b1220;
+  --bg-2: #111827;
+  --panel: rgba(17, 24, 39, 0.96);
+  --panel-2: #162033;
+  --panel-3: #0f172a;
+  --border: #243247;
+  --border-strong: #334155;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --accent: #2563eb;
+  --accent-2: #1d4ed8;
+  --shadow: 0 16px 40px rgba(2, 8, 23, 0.32);
+  --radius: 18px;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top, rgba(37, 99, 235, 0.16), transparent 28%),
+    linear-gradient(180deg, var(--bg) 0%, #08101d 100%);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  padding: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button,
+input,
+select {
+  min-height: 46px;
+}
+
+button {
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #1b2740 0%, #121a2a 100%);
+  color: var(--text);
+  border-radius: 14px;
+  padding: 0.8rem 0.95rem;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+button.primary {
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-2) 100%);
+  border-color: #3975ef;
+}
+
+button:not(:disabled):active {
+  transform: translateY(1px) scale(0.995);
+}
+
+button:disabled {
+  opacity: 0.5;
+}
+
+input,
+select {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: #09101d;
+  color: var(--text);
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
+}
+
+input[readonly] {
+  background: #0a1324;
+}
+
+.app-shell {
+  width: min(1040px, 100%);
+  margin: 0 auto;
+  padding: clamp(0.75rem, 2vw, 1.25rem);
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.9rem;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: clamp(1.3rem, 1.8vw, 1.55rem);
+  line-height: 1.1;
+}
+
+.topbar-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(110px, 140px));
+  gap: 0.6rem;
+}
+
+.status-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(120px, 180px);
+  gap: 0.75rem;
+  padding: 0.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.field span,
+.select-field span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.field input {
+  font-size: 0.96rem;
+}
+
+.field-timer input {
+  text-align: center;
+  font-weight: 700;
+}
+
+.tabbar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.55rem;
+  padding: 0.55rem;
+  margin-bottom: 0.85rem;
+}
+
+.tab-button {
+  min-height: 42px;
+  padding: 0.65rem 0.5rem;
+  white-space: nowrap;
+}
+
+.tab-button.active {
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-2) 100%);
+  border-color: #3975ef;
+}
+
+.screens,
+.ai-layout {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.screen-panel {
+  padding: 0.95rem;
+}
+
+.screen-panel h2,
+.device-dialog-card h2 {
+  margin: 0 0 0.8rem;
+  font-size: 1rem;
+}
+
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: 0.65rem;
+}
+
+.command-button {
+  min-height: 54px;
+  font-weight: 700;
+}
+
+.ai-zone-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.8rem;
+}
+
+.ai-zone-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 0.8rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+}
+
+.ai-zone-card h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.95rem;
+}
+
+.select-field {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 0.65rem;
+}
+
+.ai-addon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 0.75rem;
+}
+
+.checkbox-field {
+  align-content: end;
+}
+
+.checkbox-field input {
+  justify-self: start;
+  width: 1.15rem;
+  height: 1.15rem;
+  min-height: auto;
+}
+
+.ai-actions,
+.diagnostics-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+}
+
+.diagnostics {
+  margin-top: 0.9rem;
+}
+
+.diagnostics summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.log {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+}
+
+.log-line {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82rem;
+  color: var(--muted);
+  padding: 0.55rem 0.65rem;
+  border-radius: 10px;
+  background: #09101d;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.device-dialog {
+  border: none;
+  border-radius: 20px;
+  padding: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+.device-dialog::backdrop {
+  background: rgba(2, 8, 23, 0.74);
+}
+
+.device-dialog-card {
+  min-width: min(92vw, 360px);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1rem;
+}
+
+.device-choices {
+  display: grid;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.device-choice {
+  width: 100%;
+  text-align: left;
+}
+
+menu {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .tabbar {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    padding: 0.75rem;
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .status-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .tabbar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tab-button {
+    white-space: normal;
+    min-height: 48px;
+  }
+
+  .button-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .tabbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .button-grid,
+  .ai-addon-grid,
+  .ai-zone-grid {
+    grid-template-columns: 1fr;
+  }
+}

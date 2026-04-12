@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Grand Duo Remote</title>
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="manifest" href="./site.webmanifest" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar panel">
+      <div class="topbar-main">
+        <h1>Grand Duo Remote</h1>
+      </div>
+      <div class="topbar-actions">
+        <button id="connectBtn" class="primary">Connect</button>
+        <button id="disconnectBtn" disabled>Disconnect</button>
+      </div>
+    </header>
+
+    <section class="status-strip panel" aria-label="Connection status">
+      <label class="field field-status">
+        <span>Status</span>
+        <input id="statusField" type="text" readonly value="Disconnected" />
+      </label>
+      <label class="field field-timer">
+        <span>Timer</span>
+        <input id="timerField" type="text" readonly value="--:--" />
+      </label>
+    </section>
+
+    <nav id="tabBar" class="tabbar panel" aria-label="Screens"></nav>
+
+    <main id="screens" class="screens"></main>
+
+    <details class="panel diagnostics">
+      <summary>Diagnostics</summary>
+      <div class="diagnostics-actions">
+        <button id="startupBtn" disabled>Resend Startup</button>
+      </div>
+      <div id="activityLog" class="log"></div>
+    </details>
+  </div>
+
+  <dialog id="deviceDialog" class="device-dialog">
+    <form method="dialog" class="device-dialog-card">
+      <h2>Choose Chair</h2>
+      <div id="deviceChoices" class="device-choices"></div>
+      <menu>
+        <button value="cancel">Cancel</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <template id="commandButtonTemplate">
+    <button class="command-button" type="button"></button>
+  </template>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
