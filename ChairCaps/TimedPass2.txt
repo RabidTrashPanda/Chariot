@@ -1,0 +1,76 @@
+45 - power on
+70 - health test button
+86 - health stop button stop
+164 - got a response with the health data.
+185 - pushed an AI recommendation button.  NO IDEA what it is I never saw it before but it ran a program.  THIS IS A THING WE WANT TO CAPTURE.
+
+
+
+86 through 220 - THIS IS IMPORTANT.  THIS DATA IS IMPORTANT!  Health data!  Health scan!  AI health mode!
+230 - up 3, down 3, ok (didn't seem to do anything to the chair.  I think that tablet screen does nothing)
+250 - it took me to a spinal care screen.
+260 thru 275 - pressed leg up at random intervals to varying degrees
+292 thru 296 - I HELD DOWN leg up and it gave a nice clean up.  We have to understand this mechanism so we can go up by percents or time.
+323 thru 330 - pressed leg down a handful of times.
+345 thru 351 - held leg up until it maxed out at the top
+362 thru 383 - held leg down until it bottomed out
+420 thru 430 - foot down twice
+438 thru 452 - foot up three times
+470 thru 480 - back up until all the way up
+492 thru 518 - held back down until all the way down
+600 - manual massage upper mode knead & tap
+622 - manual massage upper mode shiatsu
+631 - manual massage upper mode tap
+637 - manual massage upper mode knock
+643 - manual massage upper mode knead
+653 - manual massage upper position partial
+662 - manual massage upper position point
+670 thru 680 - manual massage upper position held position up
+689 thru 704 - manual massage upper position held position down twice
+732 - manual massage air pressure full
+739 - manual massage air pressure arm shoulder
+747 - manual massage air pressure waist seat
+756 - manual massage air pressure leg foot
+771 - manual massage lower mech shiatsu
+798 - program - healing - mobility
+815 - program - healing - revitalize
+832 - program - healing - rejuventaiotn
+843 - program - healing - circulation
+853 - program - healing - upper back
+871 - program - internationalal - hong kong
+883 - program - international - thai stretch
+896 - program - international - Korean style
+908 - program - international - Japanese shiatsu
+920 - program - international - Swedish style
+932 - program - point massage - back
+943 - program - point massage - neck stretch
+953 - program - point massage - spinal care
+963 - program - point massage - waist and glutes
+975 - program - point massage - leg and foot
+985 - program - calming - relax
+996 - program - calming - vitality
+1004 - program - calming - morning care
+1014 - program - calming - midday care
+1024 - program - calming - night care
+1042 - program - focused - neck and shoulder
+1051 - program - focused - office relief
+1062 - program - focused - recharge
+1071 - program - focused - upper body
+1084 - program - focused - lower body
+1102 - program - focused - sports recovery
+1111 - program - focused - fatigue relief
+1122 - program - focused - lower body relax
+1145 - program - full body - quick demo
+1154 - program - full body - unwind
+1161 - program - full body - recovery
+1169 - program - full body - stretch
+1183 - program - full body - gentle
+1193 - program - full body - meditation
+1203 - program - full body - synchronized
+1237 - settings - voice off
+1242 - settings - voice on
+1247 - settings - voice off
+1256 - settings - led off
+1261 - settings - led on
+1265 - settings - led off
+

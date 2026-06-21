@@ -1,0 +1,64 @@
+45 - start health test
+60 - stop health test
+70 - start health test
+**Health test is running during this time, tablet has a status bar that updates**
+118 - 3%
+123 - 10%
+131 - 26%
+140 - 40%
+147 - 56%
+156 - 76%
+163 -90%
+160 - health test completed with heart rate 70, blood ox 93, microcirc 93, fatigue 78
+209 - AI recommendation massage program that only seems to exist in the health test menu.
+280 - turned roller level to off from the generic massage control screen
+297 - turned roller level to 1 from the generic massage control screen
+311 - turned roller level to 2 from the generic massage control screen
+341 - starter manual massager lower kneading
+356 - set lower to knock
+365 - set lower to tap
+371 - set lower to shiatsu
+379 - set lower to knead and tap
+397 - lower 4d to 2
+408 - lower 4d to 3
+417 - lower 4d to 4
+424 - lower 4d to 5
+(note: during this it was changing the UPPER mech as well even though I didn't ask for that on the tablet)
+461 - lower speed to 1
+470 - lower speed to 2
+478 - lower speed to 3
+486 - lower speed to 4
+493 - lower speed to 5
+503 - lower 4d to 1 then lower speed to 1
+521 - lower position partial
+535 - lower position point
+545 thru 565 - lower position up (I think to max)
+578 thru 595 - lower position down (I think to min)
+617 - air leg foot
+626 - air waist seat
+634 - air arm shoulder
+640 - air full body
+660 - foot roller 1
+667 - foot roller off
+674 - foot roller 2
+681 - calf rollers 1
+688 - calf rollers 0
+695 - calf rollers 2
+718 - upper mech whole
+725 - upper mech partial
+736 - upper mech point
+744 thru 755 - upper mech position up (I think to max)
+770 thru 795 - upper mech position down (I think to min)
+811 - lower mech position whole
+835 - reset chair position
+857 - reset complete
+864 thru 888 - leg up to max
+897 thru 918 - leg down to min
+933 thru 964 - chair up (lean back all the way to max)
+985 thru 1012 - chair down (sit down normally with a straight back)
+1069 thru 1081 - foot out (to max)
+1095 thru 1114 - foot in (to min)
+1150 - AI massage, just the upper knocking, with all heat options turned on.
+1175 - the above with roller heat not on
+1188 - the above with shawl heat not on and roller heat not on
+1205 - the above with only calf heat on, roller shawl foot heat off

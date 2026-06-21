@@ -1,0 +1,35 @@
+38 - full body air pressure
+(there is no menu item on that page to let me turn off air pressure)
+140 - gave up after clicking random things.  I cannot turn air pressure to 0 or disable airbags.  Once turned on I can ONLY increase the intensity or change the airbags.  Let's test out ways to make this work based on other screens.  I think this is a tablet flaw.
+225 - started an AI all shiatsu with no air, no heat
+247 - turned on only roller heat
+266 - turned on only shawl heat (the tablet UI makes me turn off roller heat before hitting save)
+285 - turned on only calf heat, once again turning off the last and hitting save.
+301 - turned on only foot heat disabling the others.
+322 - turned off all heat (only foot was on)
+334 - turned on all heat
+(note - the heat level it was setting it to was 2 in the separate heat specific menu)
+370 thru 373 - turned heat levels to 3 for roller, calf, shawl, and foot
+391 thru 394 - turned heat levels to 0 for the same as above
+425 - turned of all heat except shawl and foot
+443 - changed to roller and calf
+460 - change to shawl and calf
+535 thru 633 - began at topmost point and pressed down for 4 seconds and waited for 10 multiple times.
+680 thru 745 - did the same as above but with the lower mech beginning at lower and moving up.
+788 - set to zero g
+820 thru 840 - upper mech bottom to top hold (may have accidentally released once near the start)
+900 thru 920 - began with lower mech at topmost and moved to bottom in one sweep.
+942 thru 962 - lower mech bottom to top sweep (seems to take 20 seconds in either direction thereabouts)
+1055 thru 1075 - down click multiple times, but it felt like it wasn't following me.
+1085 thru 1090 - moved uppper back to top.
+1105 thru 1125 - moved lower mech to bottom.
+1150 thru 1195 - moved upper mech to bottom most position (it goes lower if the lower mech is lower, there's some kind of buffer that keeps safety, hence why earlier attempts to go low with top mech didn't go this low.)
+1235 thru 1255 - upper mech back at top
+1275 thru 1295 - lower mech is now topped out.
+1310 thru 1315 - upper mech can't do any lower due to lower mech.
+1335 - 10 minute time
+1345 - 20 minute time
+1352 - 30 minute time
+1360 - hit 30 minutes twice
+1370 - 20 minutes
+1375 - 10 minutes

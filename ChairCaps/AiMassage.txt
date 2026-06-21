@@ -1,0 +1,81 @@
+98 - power on
+105 - gentle (unsure it did anything)
+114 - synchronized (massage program)
+115 thru 160 - the chair was doing a body measurement routine.
+178 - air pressure 5
+186 - air pressure 4
+193 - air pressure 3
+203 - air pressure 2
+208 - air pressure 1
+217 - foot rollers 1
+224 - foot rollers 2
+232 - swapped foot rollers to calf rollers
+243 - swapper calf rollers to foot rollers
+260 - set mode to "mild"
+270 - set mode to "strong"
+280 - set mode to "gentle"
+293 - set to zero gravity (position)
+301 - set to relaxation (position)
+314 - set to sleep (position)
+324 - set to reset (position)
+339 - roller heat 1
+345 - roller heat 2
+355 - roller heat 3
+362 - roller heat 0
+368 - calf heat 1
+374 - calf heat 2
+382 - calf heat 3
+388 - calf heat 0 (also stumbled into 1 on accident)
+407 - shawl heat 1
+415 - shawl heat 2
+420 - shawl heat 3
+425 - shawl heat 0
+431 - foot heat 1
+437 - foot heat 2
+442 - foot heat 3
+448 - foot heat 0
+464 - light therapy on (mode 1 by default)
+473 - light therapy mode 2
+484 - light therapy mode 3
+491 - light therapy mode 4
+497 - light therapy mode 5
+514 - light therapy off
+545 - anion on (aromatherapy mode)
+555 - anion off (aromatherapy mode)
+570 - aroma mode on (defaulted to 1)
+586 - aroma mode 2
+592 - aroma mode 3
+602 - aroma mode 4
+607 - aroma mode 5
+613 - aroma mode 1
+621 - aromatherapy off
+632 - pause on
+638 - pause off (continue)
+668 - restore (off)
+677 - restore (on)
+706 - calming zen program
+721 - beach program
+733 - spring forest program
+747 - afternoon garden program
+765 - tea house program
+793 - ai program upper kneading
+815 - ai program mid upper kneading
+835 - ai program mid lower kneading
+849 - ai program lower kneading
+873 - ai program all 4 positions knocking
+901 - ai program all 4 positions shiatsu
+1000 - ai program upper knocking 4d=5 speed=1, upper mid knocking 4d=4 speed=3, lower mid knocking 4d=1 speed=5, lower knocking 4d=4 speed=2
+1037 - ai program roller heat, shawl heat, calf heat, foot heat all turned on
+1089 - ai program full body air 5
+1105 - ai program full body air 1
+1120 - ai program shoulder air 5
+1136 - ai program shoulder air 1
+1154 - ai program waist air 5
+1165 - ai program waist air 1
+1180 - ai program leg foot air 5
+1196 - ai program leg foot air 1
+1214 - ai program foot rollers 1 (required leg/foot air be enabled)
+1233 - ai program foot rollers 2
+1250 - ai program calf rollers 1 (required leg/foot air be enabled)
+1266 - ai program calf rollers 2
+
